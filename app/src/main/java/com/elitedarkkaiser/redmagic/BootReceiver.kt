@@ -18,7 +18,14 @@ class BootReceiver : BroadcastReceiver() {
 
         if (action != Intent.ACTION_BOOT_COMPLETED && action != Intent.ACTION_USER_UNLOCKED) return
 
-        restorePersistentHardware(context)
+        val bootPrefs = context.getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+        val normalLedsAllowed =
+            !bootPrefs.getBoolean("game_mode_led_override_active", false) &&
+            !bootPrefs.getBoolean("call_mode_led_override_active", false)
+
+        if (normalLedsAllowed) {
+            restorePersistentHardware(context)
+        }
 
         val triggerPrefs = context.getSharedPreferences("triggers", Context.MODE_PRIVATE)
         if (triggerPrefs.getBoolean("triggers_auto_start", false)) {

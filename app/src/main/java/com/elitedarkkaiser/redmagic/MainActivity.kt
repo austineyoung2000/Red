@@ -1138,6 +1138,15 @@ if (!isSupportedDevice()) {
     }
 
     private fun startFanLedService() {
+        val normalLedsAllowed =
+            !prefs().getBoolean("game_mode_led_override_active", false) &&
+            !prefs().getBoolean("call_mode_led_override_active", false)
+
+        if (!normalLedsAllowed) {
+            android.util.Log.i("RedmagicNormalLed", "Blocked normal LED service start because another mode owns LEDs")
+            return
+        }
+
         val intent = Intent(this, FanLedService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
