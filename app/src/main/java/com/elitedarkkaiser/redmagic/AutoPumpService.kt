@@ -36,6 +36,7 @@ class AutoPumpService : Service() {
         super.onCreate()
         createNotificationChannel()
         startForeground(NOTIF_ID, buildNotification("Auto pump active"))
+        applyPumpRule()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
