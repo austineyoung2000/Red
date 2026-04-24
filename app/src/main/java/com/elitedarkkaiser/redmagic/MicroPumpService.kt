@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Build
+import android.os.BatteryManager
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -84,22 +85,29 @@ class MicroPumpService : Service() {
             return
         }
 
+        val batteryManager = getSystemService(BATTERY_SERVICE) as BatteryManager
+        val charging = batteryManager.isCharging
+
+        val onThreshold = if (charging) 90f else ON_TEMP_F
+        val offThreshold = if (charging) 84f else OFF_TEMP_F
+
         val mode = when {
             tempF >= 105f -> "Performance"
             tempF >= 95f -> "Balanced"
+            charging && tempF >= 90f -> "Balanced"
             else -> "Silent"
         }
 
-        if (!pumpOn && tempF >= ON_TEMP_F) {
+        if (!pumpOn && tempF >= onThreshold) {
             MicroPumpController.setEnabled(this, true)
             pumpOn = true
-        } else if (pumpOn && tempF <= OFF_TEMP_F) {
+        } else if (pumpOn && tempF <= offThreshold) {
             MicroPumpController.setEnabled(this, false)
             pumpOn = false
         }
 
         updateNotification(
-            "Micro Pump: ${if (pumpOn) "ON" else "OFF"} • $mode • ${tempF}°F"
+            "Micro Pump: ${if (pumpOn) "ON" else "OFF"} • $mode • ${tempF}°F • ${if (charging) "Charging" else "Battery"}"
         )
     }
 
