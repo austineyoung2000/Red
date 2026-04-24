@@ -73,5 +73,6 @@
         <service android:name=".TriggerRootService" android:exported="false" />
 
         <service android:name=".GameModeService" android:exported="false" />
+        <service android:name=".CallModeService" android:exported="false" />
     </application>
 </manifest>

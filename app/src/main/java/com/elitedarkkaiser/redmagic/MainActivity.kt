@@ -234,6 +234,58 @@ class MainActivity : Activity() {
     }
 
 
+    private fun isCallModeEnabledSaved(): Boolean {
+        return prefs().getBoolean("call_mode_enabled", false)
+    }
+
+    private fun setCallModeEnabledSaved(enabled: Boolean) {
+        prefs().edit().putBoolean("call_mode_enabled", enabled).commit()
+    }
+
+    private fun getSavedCallModeProfile(): GameModeProfile {
+        return GameModeProfile(
+            fanEnabled = prefs().getBoolean("call_mode_fan_enabled", false),
+            fanLevel = prefs().getInt("call_mode_fan_level", 0),
+            pumpEnabled = prefs().getBoolean("call_mode_pump_enabled", false),
+            pumpProfile = prefs().getString("call_mode_pump_profile", "slow") ?: "slow",
+            fanLedEnabled = prefs().getBoolean("call_mode_fan_led_enabled", true),
+            fanLedEffect = prefs().getString("call_mode_fan_led_effect", "steady") ?: "steady",
+            fanLedColor = prefs().getInt("call_mode_fan_led_color", 7),
+            logoLedEnabled = prefs().getBoolean("call_mode_logo_led_enabled", true),
+            logoLedEffect = prefs().getString("call_mode_logo_led_effect", "steady") ?: "steady",
+            logoLedColor = prefs().getInt("call_mode_logo_led_color", 7),
+            shoulderLedEnabled = prefs().getBoolean("call_mode_shoulder_led_enabled", true),
+            shoulderLedEffect = prefs().getString("call_mode_shoulder_led_effect", "steady") ?: "steady",
+            shoulderLedColor = prefs().getInt("call_mode_shoulder_led_color", 7)
+        )
+    }
+
+    private fun saveCallModeProfile(profile: GameModeProfile) {
+        prefs().edit()
+            .putBoolean("call_mode_fan_enabled", profile.fanEnabled)
+            .putInt("call_mode_fan_level", profile.fanLevel)
+            .putBoolean("call_mode_pump_enabled", profile.pumpEnabled)
+            .putString("call_mode_pump_profile", profile.pumpProfile)
+            .putBoolean("call_mode_fan_led_enabled", profile.fanLedEnabled)
+            .putString("call_mode_fan_led_effect", profile.fanLedEffect)
+            .putInt("call_mode_fan_led_color", profile.fanLedColor)
+            .putBoolean("call_mode_logo_led_enabled", profile.logoLedEnabled)
+            .putString("call_mode_logo_led_effect", profile.logoLedEffect)
+            .putInt("call_mode_logo_led_color", profile.logoLedColor)
+            .putBoolean("call_mode_shoulder_led_enabled", profile.shoulderLedEnabled)
+            .putString("call_mode_shoulder_led_effect", profile.shoulderLedEffect)
+            .putInt("call_mode_shoulder_led_color", profile.shoulderLedColor)
+            .commit()
+    }
+
+    private fun callModeProfileSummary(): String {
+        val p = getSavedCallModeProfile()
+        val fanText = if (p.fanEnabled) "Fan ${p.fanLevel}" else "Fan Off"
+        val pumpText = if (p.pumpEnabled) "Pump ${p.pumpProfile.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}" else "Pump Off"
+        val ledText = if (p.fanLedEnabled || p.logoLedEnabled || p.shoulderLedEnabled) "Call LEDs On" else "Call LEDs Off"
+        return "$fanText • $pumpText • $ledText"
+    }
+
     private fun gameModeProfileSummary(): String {
         val p = getSavedGameModeProfile()
         val fanText = if (p.fanEnabled) "Fan ${p.fanLevel}" else "Fan Off"
@@ -1466,6 +1518,7 @@ if (!isSupportedDevice()) {
         switchTab("home")
         refreshStatus()
         startGameModeService()
+        startService(Intent(this, CallModeService::class.java))
     }
 
     private fun createHomeTab(): LinearLayout {
@@ -2443,6 +2496,55 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         container.addView(shoulderCard)
 
 
+        val callModeSummaryText = TextView(this).apply {
+            text = callModeProfileSummary()
+            textSize = 13f
+            setTextColor(textSecondary)
+            setPadding(0, dp(2), 0, dp(10))
+        }
+
+        val callModeSwitch = android.widget.Switch(this@MainActivity).apply {
+            isChecked = isCallModeEnabledSaved()
+            setOnCheckedChangeListener { _, checked ->
+                setCallModeEnabledSaved(checked)
+                startService(Intent(this@MainActivity, CallModeService::class.java))
+                Toast.makeText(
+                    this@MainActivity,
+                    "Call Mode " + (if (checked) "enabled" else "disabled"),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+        val callModeRow = LinearLayout(this@MainActivity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+
+            addView(TextView(this@MainActivity).apply {
+                text = "Enable Call Mode"
+                textSize = 14f
+                setTextColor(textPrimary)
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+
+            addView(callModeSwitch)
+        }
+
+        val editCallProfileBtn = actionButton("EDIT CALL PROFILE") {
+            showCallModeProfileDialog()
+            callModeSummaryText.text = callModeProfileSummary()
+        }
+
+        val callModeCard = sectionPanel().apply {
+            addView(sectionHeader("☎", "CALLS"))
+            addView(bodyText("Automatically applies a quiet call profile during phone, Messenger, Discord, WhatsApp, Telegram, and other voice calls. Useful for turning the fan off so it is not heard during calls."))
+            addView(space(dp(8)))
+            addView(callModeRow)
+            addView(infoRow("Profile", callModeSummaryText))
+            addView(singleRow(editCallProfileBtn))
+        }
+
+        container.addView(callModeCard)
+
         val gameModeStatusText = TextView(this).apply {
             text = "Status: Inactive"
             textSize = 13f
@@ -2674,6 +2776,30 @@ addView(row(configureTriggersBtn, trigEnableBtn))
                 .putString("right_trigger", "VOL_UP")
                 .apply()
         }
+    }
+
+    private fun showCallModeProfileDialog() {
+        GameModeUi.showGameModeProfileDialog(
+            activity = this,
+            current = getSavedCallModeProfile(),
+            deps = GameModeUi.Deps(
+                textPrimary = textPrimary,
+                textSecondary = textSecondary,
+                panelColor = panelColor,
+                borderColor = borderColor,
+                panelPressed = panelPressed,
+                accent = accent,
+                typeface = typeface,
+                dp = { value -> dp(value) },
+                roundedBg = { fill, stroke, radius -> roundedBg(fill, stroke, radius) },
+                roundedFill = { color, radius -> roundedFill(color, radius) },
+                filterChip = { label, selected, onClick -> filterChip(label, selected, onClick) },
+                space = { value -> space(value) },
+                colorDotDrawable = { hex, selected -> colorDotDrawable(hex, selected) },
+                colorDotGeneric = { hex, selected, onClick -> colorDotGeneric(hex, selected, onClick) },
+            ),
+            onSaveProfile = { profile -> saveCallModeProfile(profile) }
+        )
     }
 
     private fun showGameModeProfileDialog() {
