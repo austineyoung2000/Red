@@ -25,7 +25,7 @@ class FanLedRestoreWorker(
 
         val enabled = prefs.getBoolean("fan_led_enabled", false)
         val effect = prefs.getString("fan_led_effect", "steady") ?: "steady"
-        val color = prefs.getInt("fan_led_color", 5)
+        val color = prefs.getInt("fan_led_color", 1)
 
         return try {
             val ok = if (enabled) {

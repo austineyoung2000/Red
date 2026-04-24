@@ -218,7 +218,7 @@ class GameModeService : Service() {
 
         val fanLedEnabled = prefs.getBoolean("fan_led_enabled", false)
         val fanLedEffect = prefs.getString("fan_led_effect", "steady") ?: "steady"
-        val fanLedColor = prefs.getInt("fan_led_color", 5)
+        val fanLedColor = prefs.getInt("fan_led_color", 1)
 
         val logoLedEnabled = prefs.getBoolean("logo_led_enabled", true)
         val logoLedEffect = prefs.getString("logo_led_effect", "steady") ?: "steady"

@@ -110,7 +110,7 @@ class FanLedService : Service() {
 
         val fanEnabled = prefs.getBoolean("fan_led_enabled", false)
         val fanEffect = prefs.getString("fan_led_effect", "steady") ?: "steady"
-        val fanColor = prefs.getInt("fan_led_color", 5)
+        val fanColor = prefs.getInt("fan_led_color", 1)
 
         val logoEnabled = prefs.getBoolean("logo_led_enabled", true)
         val logoEffect = prefs.getString("logo_led_effect", "steady") ?: "steady"

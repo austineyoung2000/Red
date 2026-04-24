@@ -741,7 +741,7 @@ if (!isSupportedDevice()) {
     }
 
     private fun savedFanLedColor(): Int {
-        return prefs().getInt(fanLedColorKey, 5)
+        return prefs().getInt(fanLedColorKey, 1)
     }
 
     private fun applyFanLedSelection(effect: String, color: Int) {
