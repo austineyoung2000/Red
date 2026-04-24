@@ -2087,7 +2087,7 @@ if (!isSupportedDevice()) {
         if (!realTimePreviewEnabled) return
         if (!LedOwnership.normalAllowed(prefs())) return
         if (logoLedEnabled) {
-            HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+            applyLogoLedPreviewIfEnabled()
         } else {
             HardwareController.setLogoLedEnabled(false)
         }
@@ -2970,7 +2970,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
             setOnCheckedChangeListener { _, checked ->
                 logoLedEnabled = checked
                 if (checked) {
-                    HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+                    applyLogoLedPreviewIfEnabled()
                 } else {
                     HardwareController.setLogoLedEnabled(false)
                 }
@@ -2991,7 +2991,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         val steadyBtn = filterChip("Steady", logoLedEffect == "steady") {
             logoLedEffect = "steady"
             if (logoLedEnabled) {
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+                applyLogoLedPreviewIfEnabled()
             }
             dialogRefreshLogoLed?.invoke()
         }
@@ -2999,7 +2999,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         val breatheBtn = filterChip("Breathe", logoLedEffect == "breathe") {
             logoLedEffect = "breathe"
             if (logoLedEnabled) {
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+                applyLogoLedPreviewIfEnabled()
             }
             dialogRefreshLogoLed?.invoke()
         }
@@ -3007,7 +3007,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         val flashingBtn = filterChip("Flashing", logoLedEffect == "flashing") {
             logoLedEffect = "flashing"
             if (logoLedEnabled) {
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+                applyLogoLedPreviewIfEnabled()
             }
             dialogRefreshLogoLed?.invoke()
         }
@@ -3131,7 +3131,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
             logoLedColor = originalColor
 
             if (logoLedEnabled) {
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+                applyLogoLedPreviewIfEnabled()
             } else {
                 HardwareController.setLogoLedEnabled(false)
             }
@@ -3142,7 +3142,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         saveBtn.setOnClickListener {
             saveLogoLedState()
             if (logoLedEnabled) {
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+                applyLogoLedPreviewIfEnabled()
             } else {
                 HardwareController.setLogoLedEnabled(false)
             }
@@ -3160,7 +3160,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
             logoLedColor = originalColor
 
             if (logoLedEnabled) {
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+                applyLogoLedPreviewIfEnabled()
             } else {
                 HardwareController.setLogoLedEnabled(false)
             }
