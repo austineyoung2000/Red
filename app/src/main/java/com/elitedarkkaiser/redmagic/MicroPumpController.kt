@@ -51,6 +51,16 @@ object MicroPumpController {
         """.trimIndent())
     }
 
+    fun diagnostics(): String {
+        val exists = RootShell.execForOutput("if [ -e $PROC_PATH ]; then echo yes; else echo no; fi 2>/dev/null")?.trim() ?: "?"
+        val writable = RootShell.execForOutput("if [ -w $PROC_PATH ]; then echo yes; else echo no; fi 2>/dev/null")?.trim() ?: "?"
+        val proc = RootShell.execForOutput("cat $PROC_PATH 2>/dev/null")?.trim() ?: "?"
+        val setting = RootShell.execForOutput("settings get system $SETTINGS_KEY 2>/dev/null")?.trim() ?: "?"
+        val root = if (RootShell.hasRoot()) "yes" else "no"
+
+        return "Root: $root • Path exists: $exists • Writable: $writable • Proc: $proc • Setting: $setting"
+    }
+
     fun readStatus(): String {
         val proc = RootShell.execForOutput("cat $PROC_PATH 2>/dev/null")?.trim() ?: "?"
         val setting = RootShell.execForOutput("settings get system $SETTINGS_KEY 2>/dev/null")?.trim() ?: "?"

@@ -1162,7 +1162,8 @@ if (!isSupportedDevice()) {
             " • Mode: " + mode +
             " • Smart: " + (if (smart) "ON" else "OFF") +
             forceText +
-            " • " + MicroPumpController.readStatus()
+            " • " + MicroPumpController.readStatus() +
+            "\n" + MicroPumpController.diagnostics()
     }
 
     private fun enqueueFanLedRestore(delaySeconds: Long = 2) {
