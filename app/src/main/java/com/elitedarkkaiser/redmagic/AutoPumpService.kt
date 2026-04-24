@@ -52,6 +52,19 @@ class AutoPumpService : Service() {
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
+
+        val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
+        val shouldRestart = prefs.getBoolean("auto_pump_enabled", false)
+
+        if (shouldRestart) {
+            val intent = Intent(this, AutoPumpService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        }
+
         super.onDestroy()
     }
 
