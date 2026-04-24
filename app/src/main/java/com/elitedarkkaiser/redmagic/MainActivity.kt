@@ -2402,7 +2402,18 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         return container
     }
 
+    private fun ensureCallModePhonePermission() {
+        if (
+            isCallModeEnabledSaved() &&
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M &&
+            checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(android.Manifest.permission.READ_PHONE_STATE), 4401)
+        }
+    }
+
     private fun createLightingTab(): LinearLayout {
+        ensureCallModePhonePermission()
         val container = scrollTabContainer()
 
         val previewCard = sectionPanel().apply {

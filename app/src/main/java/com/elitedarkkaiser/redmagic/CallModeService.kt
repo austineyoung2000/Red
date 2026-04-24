@@ -31,7 +31,7 @@ class CallModeService : Service() {
                         }
                         callModeActive = false
                     }
-                    handler.postDelayed(this, 1500L)
+                    handler.postDelayed(this, 300L)
                     return
                 }
 
@@ -41,6 +41,16 @@ class CallModeService : Service() {
                     callModeActive = true
                     prefs.edit().putBoolean("call_mode_led_override_active", true).apply()
                     applyCallProfile()
+                    handler.postDelayed({
+                        if (callModeActive && isInAnyCall()) {
+                            applyCallProfile()
+                        }
+                    }, 350L)
+                    handler.postDelayed({
+                        if (callModeActive && isInAnyCall()) {
+                            applyCallProfile()
+                        }
+                    }, 1000L)
                 } else if (!inCall && callModeActive) {
                     val gameWasActive = prefs.getBoolean("game_mode_led_override_active", false)
                     prefs.edit()
@@ -54,7 +64,7 @@ class CallModeService : Service() {
                 }
             } catch (_: Throwable) {
             } finally {
-                handler.postDelayed(this, 1500L)
+                handler.postDelayed(this, 300L)
             }
         }
     }
