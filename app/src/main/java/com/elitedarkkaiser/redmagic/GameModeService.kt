@@ -139,55 +139,16 @@ class GameModeService : Service() {
 
         val pkg = gameModeActiveFor ?: return
         val profile = getProfileForPackage(pkg)
-
-        val fanEnabled = profile["fanEnabled"] as? Boolean ?: prefs.getBoolean("game_mode_fan_enabled", true)
-        val fanLevel = profile["fanLevel"] as? Int ?: prefs.getInt("game_mode_fan_level", 3)
-        val pumpEnabled = prefs.getBoolean("game_mode_pump_enabled", false)
-        val pumpProfile = prefs.getString("game_mode_pump_profile", "quick") ?: "quick"
-
-        val fanLedEnabled = profile["fanLedEnabled"] as? Boolean ?: prefs.getBoolean("game_mode_fan_led_enabled", true)
-        val fanLedEffect = profile["fanLedEffect"] as? String ?: prefs.getString("game_mode_fan_led_effect", "steady") ?: "steady"
-        val fallbackGameFanLedColor = prefs.getInt("game_mode_fan_led_color", prefs.getInt("fan_led_color", 1))
-        val fanLedColor = profile["fanLedColor"] as? Int ?: fallbackGameFanLedColor
-        val fanLedModeType = profile["fanLedModeType"] as? String ?: "basic"
-        val fanLedPresetValue = profile["fanLedPresetValue"] as? String ?: ""
-
-        val logoLedEnabled = profile["logoLedEnabled"] as? Boolean ?: prefs.getBoolean("game_mode_logo_led_enabled", true)
-        val logoLedEffect = profile["logoLedEffect"] as? String ?: prefs.getString("game_mode_logo_led_effect", "steady") ?: "steady"
-        val logoLedColor = profile["logoLedColor"] as? Int ?: prefs.getInt("game_mode_logo_led_color", 1)
-
-        val shoulderLedEnabled = profile["shoulderLedEnabled"] as? Boolean ?: prefs.getBoolean("game_mode_shoulder_led_enabled", true)
-        val shoulderLedEffect = profile["shoulderLedEffect"] as? String ?: prefs.getString("game_mode_shoulder_led_effect", "breathe") ?: "breathe"
-        val shoulderLedColor = profile["shoulderLedColor"] as? Int ?: prefs.getInt("game_mode_shoulder_led_color", 8)
+        val modeProfile = GameModeProfileBuilder.build(prefs, profile)
 
         fun applyOnce(reason: String) {
             if (gameModeActiveFor != pkg) return
-
-            val modeProfile = ModeHardwareProfile(
-                fanEnabled = fanEnabled,
-                fanLevel = fanLevel,
-                pumpEnabled = pumpEnabled,
-                pumpProfile = pumpProfile,
-                fanLedEnabled = fanLedEnabled,
-                fanLedEffect = fanLedEffect,
-                fanLedColor = fanLedColor,
-                fanLedPresetValue =
-                    if (fanLedModeType == "preset" && fanLedPresetValue.isNotBlank())
-                        fanLedPresetValue
-                    else "",
-                logoLedEnabled = logoLedEnabled,
-                logoLedEffect = logoLedEffect,
-                logoLedColor = logoLedColor,
-                shoulderLedEnabled = shoulderLedEnabled,
-                shoulderLedEffect = shoulderLedEffect,
-                shoulderLedColor = shoulderLedColor
-            )
 
             ModeHardwareApplier.apply(modeProfile)
 
             android.util.Log.i(
                 "RedmagicGameMode",
-                "apply[$reason] pkg=$pkg fan=$fanLedEnabled/$fanLedEffect/$fanLedColor logo=$logoLedEnabled/$logoLedEffect/$logoLedColor shoulder=$shoulderLedEnabled/$shoulderLedEffect/$shoulderLedColor"
+                "apply[$reason] pkg=$pkg fan=${modeProfile.fanLedEnabled}/${modeProfile.fanLedEffect}/${modeProfile.fanLedColor} logo=${modeProfile.logoLedEnabled}/${modeProfile.logoLedEffect}/${modeProfile.logoLedColor} shoulder=${modeProfile.shoulderLedEnabled}/${modeProfile.shoulderLedEffect}/${modeProfile.shoulderLedColor}"
             )
         }
 
