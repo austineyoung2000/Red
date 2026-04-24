@@ -81,58 +81,22 @@ class BootReceiver : BroadcastReceiver() {
 
     private fun restorePersistentHardware(context: Context) {
         val prefs = context.getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
-        val triggerPrefs = context.getSharedPreferences("triggers", Context.MODE_PRIVATE)
-
-        val fanLedEnabled = prefs.getBoolean("fan_led_enabled", false)
-        val fanLedEffect = prefs.getString("fan_led_effect", "steady") ?: "steady"
-        val fanLedColor = prefs.getInt("fan_led_color", 1)
-
-        val logoLedEnabled = prefs.getBoolean("logo_led_enabled", true)
-        val logoLedEffect = prefs.getString("logo_led_effect", "steady") ?: "steady"
-        val logoLedColor = prefs.getInt("logo_led_color", 1)
-
-        val shoulderLedEnabled = prefs.getBoolean("shoulder_led_enabled", true)
-        val shoulderLedEffect = prefs.getString("shoulder_led_effect", "breathe") ?: "breathe"
-        val shoulderLedColor = prefs.getInt("shoulder_led_color", 8)
+        val triggerPrefs = context.getSharedPreferences(PrefsKeys.TRIGGER_PREFS, Context.MODE_PRIVATE)
 
         val pumpEnabled = prefs.getBoolean("pump_enabled", false)
         val pumpProfile = prefs.getString("pump_profile", "quick") ?: "quick"
         val autoPumpEnabled = prefs.getBoolean("auto_pump_enabled", false)
         val autoFanEnabled = prefs.getBoolean("auto_fan_curve_enabled", false)
 
-        if (fanLedEnabled) {
-            HardwareController.setFanLedEnabled(true)
-            if (fanLedEffect.startsWith("preset:")) {
-                HardwareController.setFanLedStockPreset(fanLedEffect.removePrefix("preset:"))
-            } else {
-                HardwareController.setFanLedEffect(fanLedEffect, fanLedColor)
-            }
-        } else {
-            HardwareController.setFanLedEnabled(false)
-        }
-
-        if (logoLedEnabled) {
-            HardwareController.setLogoLedEnabled(true)
-            HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
-        } else {
-            HardwareController.setLogoLedEnabled(false)
-        }
-
-        if (shoulderLedEnabled) {
-            HardwareController.setShoulderLedEnabled(true)
-            HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
-        } else {
-            HardwareController.setShoulderLedEnabled(false)
+        val anyLedEnabled = NormalLedApplier.apply(prefs)
+        if (anyLedEnabled) {
+            context.startService(Intent(context, FanLedService::class.java))
         }
 
         if (pumpEnabled || autoPumpEnabled) {
             HardwareController.setPumpProfile(pumpProfile)
         } else {
             HardwareController.enablePump(false)
-        }
-
-        if (fanLedEnabled || logoLedEnabled || shoulderLedEnabled) {
-            context.startService(Intent(context, FanLedService::class.java))
         }
 
         if (autoPumpEnabled) {
@@ -152,30 +116,15 @@ class BootReceiver : BroadcastReceiver() {
 
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
             val delayedPrefs = context.getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
-            val delayedNormalAllowed =
-                LedOwnership.normalAllowed(delayedPrefs)
 
-            if (!delayedNormalAllowed) {
+            if (!LedOwnership.normalAllowed(delayedPrefs)) {
                 android.util.Log.i("RedmagicBoot", "boot delayed normal restore skipped because another mode owns LEDs")
                 return@postDelayed
             }
 
-            if (fanLedEnabled) {
-                if (fanLedEffect.startsWith("preset:")) {
-                    HardwareController.setFanLedStockPreset(fanLedEffect.removePrefix("preset:"))
-                } else {
-                    HardwareController.setFanLedEffect(fanLedEffect, fanLedColor)
-                }
-            }
-
-            if (logoLedEnabled) {
-                HardwareController.setLogoLedEnabled(true)
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
-            }
-
-            if (shoulderLedEnabled) {
-                HardwareController.setShoulderLedEnabled(true)
-                HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
+            val delayedAnyLedEnabled = NormalLedApplier.apply(delayedPrefs)
+            if (delayedAnyLedEnabled) {
+                context.startService(Intent(context, FanLedService::class.java))
             }
 
             if (pumpEnabled || autoPumpEnabled) {
@@ -184,7 +133,7 @@ class BootReceiver : BroadcastReceiver() {
 
             android.util.Log.i(
                 "RedmagicBoot",
-                "boot restore reapplied fan=$fanLedEnabled/$fanLedEffect/$fanLedColor logo=$logoLedEnabled/$logoLedEffect/$logoLedColor shoulder=$shoulderLedEnabled/$shoulderLedEffect/$shoulderLedColor pump=$pumpEnabled/$pumpProfile autoPump=$autoPumpEnabled autoFan=$autoFanEnabled"
+                "boot restore reapplied normal LEDs via shared applier pump=$pumpEnabled/$pumpProfile autoPump=$autoPumpEnabled autoFan=$autoFanEnabled"
             )
         }, 10000L)
     }
