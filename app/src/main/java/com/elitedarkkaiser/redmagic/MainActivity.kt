@@ -2087,7 +2087,7 @@ if (!isSupportedDevice()) {
         if (!realTimePreviewEnabled) return
         if (!LedOwnership.normalAllowed(prefs())) return
         if (logoLedEnabled) {
-            applyLogoLedPreviewIfEnabled()
+            HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
         } else {
             HardwareController.setLogoLedEnabled(false)
         }
@@ -2097,7 +2097,7 @@ if (!isSupportedDevice()) {
         if (!realTimePreviewEnabled) return
         if (!LedOwnership.normalAllowed(prefs())) return
         if (shoulderLedEnabled) {
-            applyShoulderLedPreviewIfEnabled()
+            HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
         } else {
             HardwareController.setShoulderLedEnabled(false)
         }
