@@ -22,12 +22,18 @@ class GameModeService : Service() {
                 val tracked = prefs.getStringSet("game_mode_packages", emptySet()) ?: emptySet()
 
                 if (!currentPkg.isNullOrBlank() && tracked.contains(currentPkg)) {
+                    val callModeOwnsHardware = prefs.getBoolean("call_mode_led_override_active", false)
+                    val forceGameReapply = prefs.getBoolean("force_game_mode_reapply", false)
+
                     if (gameModeActiveFor != currentPkg) {
                         gameModeActiveFor = currentPkg
-                        getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
-                            .edit()
+                        prefs.edit()
                             .putBoolean("game_mode_led_override_active", true)
                             .apply()
+                    }
+
+                    if (!callModeOwnsHardware && (forceGameReapply || gameModeActiveFor == currentPkg)) {
+                        prefs.edit().putBoolean("force_game_mode_reapply", false).apply()
                         applyGameModeProfile()
                     }
                 } else if (!currentPkg.isNullOrBlank()) {

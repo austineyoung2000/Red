@@ -2507,6 +2507,15 @@ addView(row(configureTriggersBtn, trigEnableBtn))
             isChecked = isCallModeEnabledSaved()
             setOnCheckedChangeListener { _, checked ->
                 setCallModeEnabledSaved(checked)
+
+                if (
+                    checked &&
+                    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M &&
+                    checkSelfPermission(android.Manifest.permission.READ_PHONE_STATE) != android.content.pm.PackageManager.PERMISSION_GRANTED
+                ) {
+                    requestPermissions(arrayOf(android.Manifest.permission.READ_PHONE_STATE), 4401)
+                }
+
                 startService(Intent(this@MainActivity, CallModeService::class.java))
                 Toast.makeText(
                     this@MainActivity,

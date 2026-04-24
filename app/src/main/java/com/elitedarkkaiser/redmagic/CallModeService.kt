@@ -7,6 +7,7 @@ import android.media.AudioManager
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.telephony.TelephonyManager
 
 class CallModeService : Service() {
     private val handler = Handler(Looper.getMainLooper())
@@ -20,8 +21,14 @@ class CallModeService : Service() {
 
                 if (!enabled) {
                     if (callModeActive) {
-                        restoreNormalProfile()
-                        prefs.edit().putBoolean("call_mode_led_override_active", false).apply()
+                        val gameWasActive = prefs.getBoolean("game_mode_led_override_active", false)
+                        prefs.edit()
+                            .putBoolean("call_mode_led_override_active", false)
+                            .putBoolean("force_game_mode_reapply", gameWasActive)
+                            .apply()
+                        if (!gameWasActive) {
+                            restoreNormalProfile()
+                        }
                         callModeActive = false
                     }
                     handler.postDelayed(this, 1500L)
@@ -35,8 +42,14 @@ class CallModeService : Service() {
                     prefs.edit().putBoolean("call_mode_led_override_active", true).apply()
                     applyCallProfile()
                 } else if (!inCall && callModeActive) {
-                    restoreNormalProfile()
-                    prefs.edit().putBoolean("call_mode_led_override_active", false).apply()
+                    val gameWasActive = prefs.getBoolean("game_mode_led_override_active", false)
+                    prefs.edit()
+                        .putBoolean("call_mode_led_override_active", false)
+                        .putBoolean("force_game_mode_reapply", gameWasActive)
+                        .apply()
+                    if (!gameWasActive) {
+                        restoreNormalProfile()
+                    }
                     callModeActive = false
                 }
             } catch (_: Throwable) {
@@ -54,11 +67,15 @@ class CallModeService : Service() {
     override fun onDestroy() {
         handler.removeCallbacks(pollRunnable)
         if (callModeActive) {
-            restoreNormalProfile()
-            getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
-                .edit()
+            val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+            val gameWasActive = prefs.getBoolean("game_mode_led_override_active", false)
+            prefs.edit()
                 .putBoolean("call_mode_led_override_active", false)
+                .putBoolean("force_game_mode_reapply", gameWasActive)
                 .apply()
+            if (!gameWasActive) {
+                restoreNormalProfile()
+            }
             callModeActive = false
         }
         super.onDestroy()
@@ -68,8 +85,20 @@ class CallModeService : Service() {
 
     private fun isInAnyCall(): Boolean {
         val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        return audio.mode == AudioManager.MODE_IN_CALL ||
+        if (
+            audio.mode == AudioManager.MODE_IN_CALL ||
             audio.mode == AudioManager.MODE_IN_COMMUNICATION
+        ) {
+            return true
+        }
+
+        return try {
+            val telephony = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            telephony.callState == TelephonyManager.CALL_STATE_RINGING ||
+                telephony.callState == TelephonyManager.CALL_STATE_OFFHOOK
+        } catch (_: Throwable) {
+            false
+        }
     }
 
     private fun applyFanLed(effect: String, color: Int) {
