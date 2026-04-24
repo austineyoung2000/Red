@@ -136,7 +136,7 @@ class CallModeService : Service() {
 
         val fanLedEnabled = prefs.getBoolean("call_mode_fan_led_enabled", true)
         val fanLedEffect = prefs.getString("call_mode_fan_led_effect", "steady") ?: "steady"
-        val fanLedColor = prefs.getInt("call_mode_fan_led_color", 7)
+        val fanLedColor = prefs.getInt("call_mode_fan_led_color", prefs.getInt("fan_led_color", 1))
 
         val logoLedEnabled = prefs.getBoolean("call_mode_logo_led_enabled", true)
         val logoLedEffect = prefs.getString("call_mode_logo_led_effect", "steady") ?: "steady"
