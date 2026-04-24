@@ -18,10 +18,8 @@ class BootReceiver : BroadcastReceiver() {
 
         if (action != Intent.ACTION_BOOT_COMPLETED && action != Intent.ACTION_USER_UNLOCKED) return
 
-        val bootPrefs = context.getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
-        val normalLedsAllowed =
-            !bootPrefs.getBoolean("game_mode_led_override_active", false) &&
-            !bootPrefs.getBoolean("call_mode_led_override_active", false)
+        val bootPrefs = context.getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
+        val normalLedsAllowed = LedOwnership.normalAllowed(bootPrefs)
 
         if (normalLedsAllowed) {
             restorePersistentHardware(context)
@@ -33,7 +31,7 @@ class BootReceiver : BroadcastReceiver() {
             context.startService(Intent(context, TriggerRootService::class.java))
         }
 
-        val prefs = context.getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
         val fanLedEnabled = prefs.getBoolean("fan_led_enabled", false)
 
         if (normalLedsAllowed && fanLedEnabled) {
@@ -82,7 +80,7 @@ class BootReceiver : BroadcastReceiver() {
     }
 
     private fun restorePersistentHardware(context: Context) {
-        val prefs = context.getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
         val triggerPrefs = context.getSharedPreferences("triggers", Context.MODE_PRIVATE)
 
         val fanLedEnabled = prefs.getBoolean("fan_led_enabled", false)
@@ -153,10 +151,9 @@ class BootReceiver : BroadcastReceiver() {
         context.startService(Intent(context, GameModeService::class.java))
 
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            val delayedPrefs = context.getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+            val delayedPrefs = context.getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
             val delayedNormalAllowed =
-                !delayedPrefs.getBoolean("game_mode_led_override_active", false) &&
-                !delayedPrefs.getBoolean("call_mode_led_override_active", false)
+                LedOwnership.normalAllowed(delayedPrefs)
 
             if (!delayedNormalAllowed) {
                 android.util.Log.i("RedmagicBoot", "boot delayed normal restore skipped because another mode owns LEDs")
