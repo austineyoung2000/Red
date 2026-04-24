@@ -7,6 +7,8 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
+import android.telephony.TelephonyManager
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Handler
@@ -71,11 +73,33 @@ class FanLedService : Service() {
         registerReceiver(screenReceiver, filter)
     }
 
+    private fun isCallActiveOrRinging(): Boolean {
+        return try {
+            val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            if (
+                audio.mode == AudioManager.MODE_IN_CALL ||
+                audio.mode == AudioManager.MODE_IN_COMMUNICATION
+            ) {
+                return true
+            }
+
+            val telephony = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            telephony.callState == TelephonyManager.CALL_STATE_RINGING ||
+                telephony.callState == TelephonyManager.CALL_STATE_OFFHOOK
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
     private fun reapplySavedLedState() {
         val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
 
-        if (prefs.getBoolean("game_mode_led_override_active", false) || prefs.getBoolean("call_mode_led_override_active", false)) {
-            android.util.Log.i("RedmagicGameMode", "FanLedService skipped normal LED apply because Game Mode owns LEDs")
+        if (
+            prefs.getBoolean("game_mode_led_override_active", false) ||
+            prefs.getBoolean("call_mode_led_override_active", false) ||
+            isCallActiveOrRinging()
+        ) {
+            android.util.Log.i("RedmagicGameMode", "FanLedService skipped normal LED apply because Game/Call Mode owns LEDs")
             return
         }
 
