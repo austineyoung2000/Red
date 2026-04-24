@@ -6,10 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Process
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import java.util.concurrent.TimeUnit
 
 class BootReceiver : BroadcastReceiver() {
 
