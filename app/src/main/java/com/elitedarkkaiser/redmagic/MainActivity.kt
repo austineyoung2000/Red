@@ -905,12 +905,12 @@ if (!isSupportedDevice()) {
             shoulderLedEffect = shoulderLedEffect,
             shoulderLedColor = shoulderLedColor,
 
-            triggerEnabled = getSharedPreferences("triggers", MODE_PRIVATE).getBoolean("triggers_auto_start", false),
-            hapticsEnabled = getSharedPreferences("triggers", MODE_PRIVATE).getBoolean("haptics_enabled", true),
-            leftTriggerAction = getSharedPreferences("triggers", MODE_PRIVATE).getString("left_trigger", "NONE") ?: "NONE",
-            rightTriggerAction = getSharedPreferences("triggers", MODE_PRIVATE).getString("right_trigger", "NONE") ?: "NONE",
-            intentUnlockRightTrigger = getSharedPreferences("triggers", MODE_PRIVATE).getBoolean("intent_unlock_right_trigger", true),
-            triggersAutoStart = getSharedPreferences("triggers", MODE_PRIVATE).getBoolean("triggers_auto_start", false)
+            triggerEnabled = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE).getBoolean("triggers_auto_start", false),
+            hapticsEnabled = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE).getBoolean("haptics_enabled", true),
+            leftTriggerAction = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE).getString("left_trigger", "NONE") ?: "NONE",
+            rightTriggerAction = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE).getString("right_trigger", "NONE") ?: "NONE",
+            intentUnlockRightTrigger = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE).getBoolean("intent_unlock_right_trigger", true),
+            triggersAutoStart = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE).getBoolean("triggers_auto_start", false)
         )
     }
 
@@ -936,7 +936,7 @@ if (!isSupportedDevice()) {
 
         fanSeek.progress = profile.fanLevel
 
-        getSharedPreferences("triggers", MODE_PRIVATE)
+        getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE)
             .edit()
             .putString("left_trigger", profile.leftTriggerAction)
             .putString("right_trigger", profile.rightTriggerAction)
@@ -2230,7 +2230,7 @@ if (!isSupportedDevice()) {
             addView(space(dp(10)))
             
             val hapticSwitch = android.widget.Switch(this@MainActivity).apply {
-                val prefs = getSharedPreferences("triggers", MODE_PRIVATE)
+                val prefs = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE)
                 isChecked = prefs.getBoolean("haptics_enabled", true)
 
                 setOnCheckedChangeListener { _, checked ->
@@ -2261,7 +2261,7 @@ if (!isSupportedDevice()) {
 
 
             val intentUnlockSwitch = android.widget.Switch(this@MainActivity).apply {
-                val prefs = getSharedPreferences("triggers", MODE_PRIVATE)
+                val prefs = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE)
                 isChecked = prefs.getBoolean("intent_unlock_right_trigger", true)
 
                 setOnCheckedChangeListener { _, checked ->
@@ -2292,7 +2292,7 @@ if (!isSupportedDevice()) {
             addView(intentUnlockRow)
 
             val autoStartSwitch = android.widget.Switch(this@MainActivity).apply {
-                val prefs = getSharedPreferences("triggers", MODE_PRIVATE)
+                val prefs = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE)
                 isChecked = prefs.getBoolean("triggers_auto_start", false)
 
                 setOnCheckedChangeListener { _, checked ->
@@ -2627,7 +2627,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
 
 
     private fun showTriggerSetupDialog() {
-        val prefs = getSharedPreferences("triggers", MODE_PRIVATE)
+        val prefs = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE)
 
         val labels = arrayOf(
             "None",
@@ -2802,7 +2802,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
 
 
     private fun initDefaultTriggerMappings() {
-        val p = getSharedPreferences("triggers", MODE_PRIVATE)
+        val p = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE)
         if (!p.contains("left_trigger")) {
             p.edit()
                 .putString("left_trigger", "VOL_DOWN")

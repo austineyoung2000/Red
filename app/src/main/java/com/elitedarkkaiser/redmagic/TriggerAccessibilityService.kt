@@ -15,7 +15,7 @@ class TriggerAccessibilityService : AccessibilityService() {
         HardwareController.enableTriggers()
     }
 
-    private fun prefs() = getSharedPreferences("triggers", Context.MODE_PRIVATE)
+    private fun prefs() = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, Context.MODE_PRIVATE)
 
     private fun getAction(key: String): String {
         return prefs().getString(key, "NONE") ?: "NONE"

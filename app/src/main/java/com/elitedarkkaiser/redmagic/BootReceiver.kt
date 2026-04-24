@@ -25,7 +25,7 @@ class BootReceiver : BroadcastReceiver() {
             restorePersistentHardware(context)
         }
 
-        val triggerPrefs = context.getSharedPreferences("triggers", Context.MODE_PRIVATE)
+        val triggerPrefs = context.getSharedPreferences(PrefsKeys.TRIGGER_PREFS, Context.MODE_PRIVATE)
         if (triggerPrefs.getBoolean("triggers_auto_start", false)) {
             HardwareController.enableTriggers()
             context.startService(Intent(context, TriggerRootService::class.java))

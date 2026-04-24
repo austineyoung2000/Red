@@ -35,7 +35,7 @@ class TriggerRootService : Service() {
         startReader("/dev/input/event5", "right_trigger")
     }
 
-    private fun prefs() = getSharedPreferences("triggers", MODE_PRIVATE)
+    private fun prefs() = getSharedPreferences(PrefsKeys.TRIGGER_PREFS, MODE_PRIVATE)
 
     private fun isScreenInteractive(): Boolean {
         val powerManager = getSystemService(POWER_SERVICE) as android.os.PowerManager
