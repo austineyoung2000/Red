@@ -35,27 +35,7 @@ class BootReceiver : BroadcastReceiver() {
         val fanLedEnabled = prefs.getBoolean("fan_led_enabled", false)
 
         if (normalLedsAllowed && fanLedEnabled) {
-            val shortRequest = OneTimeWorkRequestBuilder<FanLedRestoreWorker>()
-                .setInitialDelay(10, TimeUnit.SECONDS)
-                .addTag("fan_led_restore_short")
-                .build()
-
-            val longRequest = OneTimeWorkRequestBuilder<FanLedRestoreWorker>()
-                .setInitialDelay(40, TimeUnit.SECONDS)
-                .addTag("fan_led_restore_long")
-                .build()
-
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                "fan_led_restore_short",
-                ExistingWorkPolicy.REPLACE,
-                shortRequest
-            )
-
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                "fan_led_restore_long",
-                ExistingWorkPolicy.REPLACE,
-                longRequest
-            )
+            FanLedRestoreWork.scheduleBootRestore(context)
         }
 
         if (prefs.getBoolean("call_mode_enabled", false)) {
