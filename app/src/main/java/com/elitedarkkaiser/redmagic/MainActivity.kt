@@ -187,31 +187,6 @@ class MainActivity : Activity() {
             .apply()
     }
 
-    private fun applySavedGameModeProfileNow() {
-        val p = getSavedGameModeProfile()
-
-        if (p.fanEnabled) {
-            HardwareController.setFanLevel(p.fanLevel)
-        } else {
-            HardwareController.enableFan(false)
-        }
-
-        if (p.pumpEnabled) {
-            HardwareController.setPumpProfile(p.pumpProfile)
-        } else {
-            HardwareController.enablePump(false)
-        }
-
-        if (p.fanLedEnabled) {
-            applyFanLedSelection(p.fanLedEffect, p.fanLedColor)
-        } else {
-            HardwareController.setFanLedEnabled(false)
-        }
-
-        if (p.logoLedEnabled) {
-            HardwareController.setLogoLedEffect(p.logoLedEffect, p.logoLedColor)
-        }
-    }
 
     private fun restoreNormalProfileNow() {
         if (HardwareController.isFanEnabled()) {
