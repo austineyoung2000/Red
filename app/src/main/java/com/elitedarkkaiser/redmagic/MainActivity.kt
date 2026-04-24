@@ -2097,7 +2097,7 @@ if (!isSupportedDevice()) {
         if (!realTimePreviewEnabled) return
         if (!LedOwnership.normalAllowed(prefs())) return
         if (shoulderLedEnabled) {
-            HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
+            applyShoulderLedPreviewIfEnabled()
         } else {
             HardwareController.setShoulderLedEnabled(false)
         }
@@ -2909,7 +2909,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
             setEffect = { value -> shoulderLedEffect = value },
             setColor = { value -> shoulderLedColor = value },
             applyPreviewIfEnabled = { applyShoulderLedPreviewIfEnabled() },
-            applyEffect = { effect, color -> HardwareController.setShoulderLedEffect(effect, color) },
+            applyEffect = { effect, color -> if (LedOwnership.normalAllowed(prefs())) HardwareController.setShoulderLedEffect(effect, color) },
             disableLed = { HardwareController.setShoulderLedEnabled(false) },
             saveState = { saveShoulderLedState() },
             startFanLedService = { startFanLedService() },
