@@ -33,6 +33,9 @@ class GameModeService : Service() {
                             .putBoolean(PrefsKeys.GAME_LED_OWNER, true)
                             .apply()
                         stopService(Intent(this@GameModeService, FanLedService::class.java))
+                        if (MicroPumpController.isSmartSaved(this@GameModeService) || MicroPumpController.isForceActive(this@GameModeService)) {
+                            startService(Intent(this@GameModeService, MicroPumpService::class.java))
+                        }
                     }
 
                     if (!callModeOwnsHardware && (enteringGame || forceGameReapply)) {
