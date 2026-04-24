@@ -1480,27 +1480,12 @@ if (!isSupportedDevice()) {
         useFahrenheit = isUseFahrenheitSaved()
         autoPumpEnabled = isAutoPumpEnabledSaved()
 
-        val normalLedsAllowedOnLaunch = LedOwnership.normalAllowed(prefs())
-
-        if (normalLedsAllowedOnLaunch) {
-            if (fanLedEnabled) {
-                applyFanLedSelection(fanLedEffect, fanLedColor)
+        if (LedOwnership.normalAllowed(prefs())) {
+            val anyLedEnabled = NormalLedApplier.apply(prefs())
+            if (anyLedEnabled) {
                 startFanLedService()
             } else {
-                HardwareController.setFanLedEnabled(false)
                 stopFanLedService()
-            }
-
-            if (logoLedEnabled) {
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
-            } else {
-                HardwareController.setLogoLedEnabled(false)
-            }
-
-            if (shoulderLedEnabled) {
-                HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
-            } else {
-                HardwareController.setShoulderLedEnabled(false)
             }
         } else {
             android.util.Log.i("RedmagicNormalLed", "MainActivity skipped launch normal LED restore because another mode owns LEDs")
