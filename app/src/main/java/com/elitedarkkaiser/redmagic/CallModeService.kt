@@ -22,9 +22,9 @@ class CallModeService : Service() {
 
                 if (!enabled) {
                     if (callModeActive) {
-                        val gameWasActive = prefs.getBoolean("game_mode_led_override_active", false)
+                        val gameWasActive = prefs.getBoolean(PrefsKeys.GAME_LED_OWNER, false)
                         prefs.edit()
-                            .putBoolean("call_mode_led_override_active", false)
+                            .putBoolean(PrefsKeys.CALL_LED_OWNER, false)
                             .putBoolean("force_game_mode_reapply", gameWasActive)
                             .apply()
                         if (!gameWasActive) {
@@ -40,7 +40,7 @@ class CallModeService : Service() {
 
                 if (inCall && !callModeActive) {
                     callModeActive = true
-                    prefs.edit().putBoolean("call_mode_led_override_active", true).apply()
+                    prefs.edit().putBoolean(PrefsKeys.CALL_LED_OWNER, true).apply()
                     WorkManager.getInstance(this@CallModeService).cancelUniqueWork("fan_led_restore_short")
                     WorkManager.getInstance(this@CallModeService).cancelUniqueWork("fan_led_restore_long")
                     WorkManager.getInstance(this@CallModeService).cancelUniqueWork("fan_led_restore")
@@ -57,9 +57,9 @@ class CallModeService : Service() {
                         }
                     }, 1000L)
                 } else if (!inCall && callModeActive) {
-                    val gameWasActive = prefs.getBoolean("game_mode_led_override_active", false)
+                    val gameWasActive = prefs.getBoolean(PrefsKeys.GAME_LED_OWNER, false)
                     prefs.edit()
-                        .putBoolean("call_mode_led_override_active", false)
+                        .putBoolean(PrefsKeys.CALL_LED_OWNER, false)
                         .putBoolean("force_game_mode_reapply", gameWasActive)
                         .apply()
                     if (!gameWasActive) {
@@ -83,9 +83,9 @@ class CallModeService : Service() {
         handler.removeCallbacks(pollRunnable)
         if (callModeActive) {
             val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
-            val gameWasActive = prefs.getBoolean("game_mode_led_override_active", false)
+            val gameWasActive = prefs.getBoolean(PrefsKeys.GAME_LED_OWNER, false)
             prefs.edit()
-                .putBoolean("call_mode_led_override_active", false)
+                .putBoolean(PrefsKeys.CALL_LED_OWNER, false)
                 .putBoolean("force_game_mode_reapply", gameWasActive)
                 .apply()
             if (!gameWasActive) {

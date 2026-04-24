@@ -22,13 +22,13 @@ class GameModeService : Service() {
                 val tracked = prefs.getStringSet("game_mode_packages", emptySet()) ?: emptySet()
 
                 if (!currentPkg.isNullOrBlank() && tracked.contains(currentPkg)) {
-                    val callModeOwnsHardware = prefs.getBoolean("call_mode_led_override_active", false)
+                    val callModeOwnsHardware = prefs.getBoolean(PrefsKeys.CALL_LED_OWNER, false)
                     val forceGameReapply = prefs.getBoolean("force_game_mode_reapply", false)
 
                     if (gameModeActiveFor != currentPkg) {
                         gameModeActiveFor = currentPkg
                         prefs.edit()
-                            .putBoolean("game_mode_led_override_active", true)
+                            .putBoolean(PrefsKeys.GAME_LED_OWNER, true)
                             .apply()
                         stopService(Intent(this@GameModeService, FanLedService::class.java))
                     }
@@ -42,7 +42,7 @@ class GameModeService : Service() {
                         restoreNormalProfile()
                         getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
                             .edit()
-                            .putBoolean("game_mode_led_override_active", false)
+                            .putBoolean(PrefsKeys.GAME_LED_OWNER, false)
                             .apply()
                         gameModeActiveFor = null
                     }
@@ -65,7 +65,7 @@ class GameModeService : Service() {
             restoreNormalProfile()
             getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
                 .edit()
-                .putBoolean("game_mode_led_override_active", false)
+                .putBoolean(PrefsKeys.GAME_LED_OWNER, false)
                 .apply()
             gameModeActiveFor = null
         }
