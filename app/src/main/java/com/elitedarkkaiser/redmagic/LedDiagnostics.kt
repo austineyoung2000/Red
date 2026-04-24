@@ -1,25 +1,13 @@
 package com.elitedarkkaiser.redmagic
 
 import android.content.Context
-import android.media.AudioManager
-import android.telephony.TelephonyManager
 
 object LedDiagnostics {
     fun build(context: Context): String {
         val prefs = context.getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
-        val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val callState = try {
-            val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            when (telephony.callState) {
-                TelephonyManager.CALL_STATE_RINGING -> "RINGING"
-                TelephonyManager.CALL_STATE_OFFHOOK -> "OFFHOOK"
-                TelephonyManager.CALL_STATE_IDLE -> "IDLE"
-                else -> "UNKNOWN"
-            }
-        } catch (_: Throwable) {
-            "NO PERMISSION"
-        }
+        val audioMode = CallStateMonitor.audioMode(context)
+        val callState = CallStateMonitor.phoneStateLabel(context)
 
         return """
 LED Ownership
@@ -28,7 +16,7 @@ Game owns LEDs: ${LedOwnership.gameOwns(prefs)}
 Call owns LEDs: ${LedOwnership.callOwns(prefs)}
 
 Call State
-Audio mode: ${audio.mode}
+Audio mode: $audioMode
 Phone state: $callState
 
 Saved Normal LEDs

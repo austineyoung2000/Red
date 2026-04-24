@@ -3,11 +3,9 @@ package com.elitedarkkaiser.redmagic
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.media.AudioManager
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.telephony.TelephonyManager
 
 class CallModeService : Service() {
     private val handler = Handler(Looper.getMainLooper())
@@ -35,7 +33,7 @@ class CallModeService : Service() {
                     return
                 }
 
-                val inCall = isInAnyCall()
+                val inCall = CallStateMonitor.isInAnyCall(this@CallModeService)
 
                 if (inCall && !callModeActive) {
                     callModeActive = true
@@ -44,12 +42,12 @@ class CallModeService : Service() {
                     stopService(Intent(this@CallModeService, FanLedService::class.java))
                     applyCallProfile()
                     handler.postDelayed({
-                        if (callModeActive && isInAnyCall()) {
+                        if (callModeActive && CallStateMonitor.isInAnyCall(this@CallModeService)) {
                             applyCallProfile()
                         }
                     }, 350L)
                     handler.postDelayed({
-                        if (callModeActive && isInAnyCall()) {
+                        if (callModeActive && CallStateMonitor.isInAnyCall(this@CallModeService)) {
                             applyCallProfile()
                         }
                     }, 1000L)
@@ -95,23 +93,6 @@ class CallModeService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun isInAnyCall(): Boolean {
-        val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        if (
-            audio.mode == AudioManager.MODE_IN_CALL ||
-            audio.mode == AudioManager.MODE_IN_COMMUNICATION
-        ) {
-            return true
-        }
-
-        return try {
-            val telephony = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            telephony.callState == TelephonyManager.CALL_STATE_RINGING ||
-                telephony.callState == TelephonyManager.CALL_STATE_OFFHOOK
-        } catch (_: Throwable) {
-            false
-        }
-    }
 
 
     private fun applyCallProfile() {

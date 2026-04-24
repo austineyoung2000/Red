@@ -7,8 +7,6 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.media.AudioManager
-import android.telephony.TelephonyManager
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Handler
@@ -73,28 +71,11 @@ class FanLedService : Service() {
         registerReceiver(screenReceiver, filter)
     }
 
-    private fun isCallActiveOrRinging(): Boolean {
-        return try {
-            val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            if (
-                audio.mode == AudioManager.MODE_IN_CALL ||
-                audio.mode == AudioManager.MODE_IN_COMMUNICATION
-            ) {
-                return true
-            }
-
-            val telephony = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            telephony.callState == TelephonyManager.CALL_STATE_RINGING ||
-                telephony.callState == TelephonyManager.CALL_STATE_OFFHOOK
-        } catch (_: Throwable) {
-            false
-        }
-    }
 
     private fun reapplySavedLedState() {
         val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
-        if (!LedOwnership.normalAllowed(prefs) || isCallActiveOrRinging()) {
+        if (!LedOwnership.normalAllowed(prefs) || CallStateMonitor.isInAnyCall(this)) {
             android.util.Log.i(
                 "RedmagicNormalLed",
                 "Normal LED profile blocked because another mode owns LEDs"
