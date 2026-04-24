@@ -36,7 +36,7 @@ class BootReceiver : BroadcastReceiver() {
         val prefs = context.getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
         val fanLedEnabled = prefs.getBoolean("fan_led_enabled", false)
 
-        if (fanLedEnabled) {
+        if (normalLedsAllowed && fanLedEnabled) {
             val shortRequest = OneTimeWorkRequestBuilder<FanLedRestoreWorker>()
                 .setInitialDelay(10, TimeUnit.SECONDS)
                 .addTag("fan_led_restore_short")
@@ -60,13 +60,13 @@ class BootReceiver : BroadcastReceiver() {
             )
         }
 
-        val tracked = prefs.getStringSet("game_mode_packages", emptySet()) ?: emptySet()
-        if (tracked.isNotEmpty() && hasUsageStatsPermission(context)) {
-            context.startService(Intent(context, GameModeService::class.java))
-
         if (prefs.getBoolean("call_mode_enabled", false)) {
             context.startService(Intent(context, CallModeService::class.java))
         }
+
+        val tracked = prefs.getStringSet("game_mode_packages", emptySet()) ?: emptySet()
+        if (tracked.isNotEmpty() && hasUsageStatsPermission(context)) {
+            context.startService(Intent(context, GameModeService::class.java))
         }
     }
 
