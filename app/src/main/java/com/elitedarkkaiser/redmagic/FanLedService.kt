@@ -94,20 +94,20 @@ class FanLedService : Service() {
     private fun reapplySavedLedState() {
         val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
 
-        if (
-            prefs.getBoolean("game_mode_led_override_active", false) ||
-            prefs.getBoolean("call_mode_led_override_active", false) ||
-            isCallActiveOrRinging()
-        ) {
-            android.util.Log.i("RedmagicGameMode", "FanLedService skipped normal LED apply because Game/Call Mode owns LEDs")
+        val normalProfileAllowed =
+            !prefs.getBoolean("game_mode_led_override_active", false) &&
+            !prefs.getBoolean("call_mode_led_override_active", false) &&
+            !isCallActiveOrRinging()
+
+        if (!normalProfileAllowed) {
+            android.util.Log.i(
+                "RedmagicNormalLed",
+                "Normal LED profile skipped because another mode owns LEDs"
+            )
+            stopSelf()
             return
         }
 
-        
-        if (prefs.getBoolean("game_mode_led_override_active", false)) {
-            android.util.Log.i("RedmagicGameMode", "FanLedService skipped normal LED apply because Game Mode owns LEDs")
-            return
-        }
         val fanEnabled = prefs.getBoolean("fan_led_enabled", false)
         val fanEffect = prefs.getString("fan_led_effect", "steady") ?: "steady"
         val fanColor = prefs.getInt("fan_led_color", 5)
@@ -140,7 +140,7 @@ class FanLedService : Service() {
 
         if (fanEnabled || logoEnabled || shoulderEnabled) {
             updateNotification(
-                "LED persistence active • Fan: " +
+                "Normal LED profile active • Fan: " +
                     (if (fanEnabled) "on" else "off") +
                     " • Logo: " +
                     (if (logoEnabled) "on" else "off") +
