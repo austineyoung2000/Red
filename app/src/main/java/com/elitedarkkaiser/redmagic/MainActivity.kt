@@ -1894,11 +1894,28 @@ if (!isSupportedDevice()) {
                 refreshMicroPumpUi()
             }
 
+            val forceOnBtn = actionButton("FORCE ON 10 MIN") {
+                MicroPumpController.saveSmart(this@MainActivity, false)
+                stopMicroPumpService()
+                MicroPumpController.setEnabled(this@MainActivity, true)
+
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    if (!MicroPumpController.isSmartSaved(this@MainActivity)) {
+                        MicroPumpController.setEnabled(this@MainActivity, false)
+                        refreshMicroPumpUi()
+                    }
+                }, 10L * 60L * 1000L)
+
+                refreshStatus()
+                refreshMicroPumpUi()
+                Toast.makeText(this@MainActivity, "Micro pump forced on for 10 minutes", Toast.LENGTH_SHORT).show()
+            }
+
             addView(statusText)
             addView(manualRow)
             addView(smartRow)
             addView(space(dp(10)))
-            addView(singleRow(refreshBtn))
+            addView(row(refreshBtn, forceOnBtn))
         }
 
         val coolingCard = sectionPanel().apply {
