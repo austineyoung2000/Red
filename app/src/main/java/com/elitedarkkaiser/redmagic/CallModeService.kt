@@ -116,58 +116,31 @@ class CallModeService : Service() {
         }
     }
 
-    private fun applyFanLed(effect: String, color: Int) {
-        HardwareController.setFanLedEnabled(true)
-        if (effect.startsWith("preset:")) {
-            HardwareController.setFanLedStockPreset(effect.removePrefix("preset:"))
-        } else {
-            HardwareController.setFanLedEffect(effect, color)
-        }
-    }
 
     private fun applyCallProfile() {
         val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
-        val fanEnabled = prefs.getBoolean("call_mode_fan_enabled", false)
-        val fanLevel = prefs.getInt("call_mode_fan_level", 0)
+        val profile = ModeHardwareProfile(
+            fanEnabled = prefs.getBoolean("call_mode_fan_enabled", false),
+            fanLevel = prefs.getInt("call_mode_fan_level", 0),
+            pumpEnabled = prefs.getBoolean("call_mode_pump_enabled", false),
+            pumpProfile = prefs.getString("call_mode_pump_profile", "slow") ?: "slow",
+            fanLedEnabled = prefs.getBoolean("call_mode_fan_led_enabled", true),
+            fanLedEffect = prefs.getString("call_mode_fan_led_effect", "steady") ?: "steady",
+            fanLedColor = prefs.getInt("call_mode_fan_led_color", prefs.getInt("fan_led_color", 1)),
+            logoLedEnabled = prefs.getBoolean("call_mode_logo_led_enabled", true),
+            logoLedEffect = prefs.getString("call_mode_logo_led_effect", "steady") ?: "steady",
+            logoLedColor = prefs.getInt("call_mode_logo_led_color", prefs.getInt("logo_led_color", 1)),
+            shoulderLedEnabled = prefs.getBoolean("call_mode_shoulder_led_enabled", true),
+            shoulderLedEffect = prefs.getString("call_mode_shoulder_led_effect", "steady") ?: "steady",
+            shoulderLedColor = prefs.getInt("call_mode_shoulder_led_color", prefs.getInt("shoulder_led_color", 8))
+        )
 
-        val pumpEnabled = prefs.getBoolean("call_mode_pump_enabled", false)
-        val pumpProfile = prefs.getString("call_mode_pump_profile", "slow") ?: "slow"
-
-        val fanLedEnabled = prefs.getBoolean("call_mode_fan_led_enabled", true)
-        val fanLedEffect = prefs.getString("call_mode_fan_led_effect", "steady") ?: "steady"
-        val fanLedColor = prefs.getInt("call_mode_fan_led_color", prefs.getInt("fan_led_color", 1))
-
-        val logoLedEnabled = prefs.getBoolean("call_mode_logo_led_enabled", true)
-        val logoLedEffect = prefs.getString("call_mode_logo_led_effect", "steady") ?: "steady"
-        val logoLedColor = prefs.getInt("call_mode_logo_led_color", 7)
-
-        val shoulderLedEnabled = prefs.getBoolean("call_mode_shoulder_led_enabled", true)
-        val shoulderLedEffect = prefs.getString("call_mode_shoulder_led_effect", "steady") ?: "steady"
-        val shoulderLedColor = prefs.getInt("call_mode_shoulder_led_color", 7)
-
-        if (fanEnabled) HardwareController.setFanLevel(fanLevel) else HardwareController.enableFan(false)
-        if (pumpEnabled) HardwareController.setPumpProfile(pumpProfile) else HardwareController.enablePump(false)
-
-        if (fanLedEnabled) applyFanLed(fanLedEffect, fanLedColor) else HardwareController.setFanLedEnabled(false)
-
-        if (logoLedEnabled) {
-            HardwareController.setLogoLedEnabled(true)
-            HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
-        } else {
-            HardwareController.setLogoLedEnabled(false)
-        }
-
-        if (shoulderLedEnabled) {
-            HardwareController.setShoulderLedEnabled(true)
-            HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
-        } else {
-            HardwareController.setShoulderLedEnabled(false)
-        }
+        ModeHardwareApplier.apply(profile)
 
         android.util.Log.i(
             "RedmagicCallMode",
-            "applied call profile fan=$fanEnabled/$fanLevel pump=$pumpEnabled/$pumpProfile fanLed=$fanLedEnabled/$fanLedEffect/$fanLedColor logo=$logoLedEnabled/$logoLedEffect/$logoLedColor shoulder=$shoulderLedEnabled/$shoulderLedEffect/$shoulderLedColor"
+            "applied call profile fan=${profile.fanEnabled}/${profile.fanLevel} pump=${profile.pumpEnabled}/${profile.pumpProfile} fanLed=${profile.fanLedEnabled}/${profile.fanLedEffect}/${profile.fanLedColor} logo=${profile.logoLedEnabled}/${profile.logoLedEffect}/${profile.logoLedColor} shoulder=${profile.shoulderLedEnabled}/${profile.shoulderLedEffect}/${profile.shoulderLedColor}"
         )
     }
 
