@@ -1142,8 +1142,17 @@ if (!isSupportedDevice()) {
     private fun microPumpStatusText(): String {
         val enabled = MicroPumpController.isEnabledSaved(this)
         val smart = MicroPumpController.isSmartSaved(this)
+        val forceActive = MicroPumpController.isForceActive(this)
+        val forceText = if (forceActive) {
+            val minLeft = ((MicroPumpController.forceUntil(this) - System.currentTimeMillis()) / 60000L).coerceAtLeast(0L)
+            " • Force: ${minLeft}m"
+        } else {
+            " • Force: OFF"
+        }
+
         return "Pump: " + (if (enabled) "ON" else "OFF") +
             " • Smart: " + (if (smart) "ON" else "OFF") +
+            forceText +
             " • " + MicroPumpController.readStatus()
     }
 
@@ -1905,11 +1914,24 @@ if (!isSupportedDevice()) {
                 Toast.makeText(this@MainActivity, "Micro pump forced on for 10 minutes", Toast.LENGTH_SHORT).show()
             }
 
+            val cancelForceBtn = actionButton("CANCEL FORCE", isDanger = true) {
+                MicroPumpController.saveForceUntil(this@MainActivity, 0L)
+                if (!MicroPumpController.isSmartSaved(this@MainActivity)) {
+                    MicroPumpController.setEnabled(this@MainActivity, manualSwitch.isChecked)
+                    stopMicroPumpService()
+                }
+                refreshStatus()
+                refreshMicroPumpUi()
+                Toast.makeText(this@MainActivity, "Micro pump force timer cancelled", Toast.LENGTH_SHORT).show()
+            }
+
             addView(statusText)
             addView(manualRow)
             addView(smartRow)
             addView(space(dp(10)))
             addView(row(refreshBtn, forceOnBtn))
+            addView(space(dp(8)))
+            addView(singleRow(cancelForceBtn))
         }
 
         val coolingCard = sectionPanel().apply {
