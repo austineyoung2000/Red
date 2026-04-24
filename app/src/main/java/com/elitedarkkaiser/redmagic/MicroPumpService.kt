@@ -87,6 +87,14 @@ class MicroPumpService : Service() {
 
         val batteryManager = getSystemService(BATTERY_SERVICE) as BatteryManager
         val charging = batteryManager.isCharging
+        val batteryPercent = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+
+        if (!charging && batteryPercent in 1..14) {
+            MicroPumpController.setEnabled(this, false)
+            pumpOn = false
+            updateNotification("Micro Pump paused • Low battery ${batteryPercent}%")
+            return
+        }
 
         val onThreshold = if (charging) 90f else ON_TEMP_F
         val offThreshold = if (charging) 84f else OFF_TEMP_F
