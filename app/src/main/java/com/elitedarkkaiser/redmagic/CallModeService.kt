@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.telephony.TelephonyManager
+import androidx.work.WorkManager
 
 class CallModeService : Service() {
     private val handler = Handler(Looper.getMainLooper())
@@ -40,6 +41,9 @@ class CallModeService : Service() {
                 if (inCall && !callModeActive) {
                     callModeActive = true
                     prefs.edit().putBoolean("call_mode_led_override_active", true).apply()
+                    WorkManager.getInstance(this@CallModeService).cancelUniqueWork("fan_led_restore_short")
+                    WorkManager.getInstance(this@CallModeService).cancelUniqueWork("fan_led_restore_long")
+                    WorkManager.getInstance(this@CallModeService).cancelUniqueWork("fan_led_restore")
                     stopService(Intent(this@CallModeService, FanLedService::class.java))
                     applyCallProfile()
                     handler.postDelayed({

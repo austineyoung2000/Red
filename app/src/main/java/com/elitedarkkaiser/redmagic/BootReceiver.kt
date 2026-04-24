@@ -153,6 +153,16 @@ class BootReceiver : BroadcastReceiver() {
         context.startService(Intent(context, GameModeService::class.java))
 
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            val delayedPrefs = context.getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+            val delayedNormalAllowed =
+                !delayedPrefs.getBoolean("game_mode_led_override_active", false) &&
+                !delayedPrefs.getBoolean("call_mode_led_override_active", false)
+
+            if (!delayedNormalAllowed) {
+                android.util.Log.i("RedmagicBoot", "boot delayed normal restore skipped because another mode owns LEDs")
+                return@postDelayed
+            }
+
             if (fanLedEnabled) {
                 if (fanLedEffect.startsWith("preset:")) {
                     HardwareController.setFanLedStockPreset(fanLedEffect.removePrefix("preset:"))

@@ -1482,24 +1482,32 @@ if (!isSupportedDevice()) {
         useFahrenheit = isUseFahrenheitSaved()
         autoPumpEnabled = isAutoPumpEnabledSaved()
 
-        if (fanLedEnabled) {
-            applyFanLedSelection(fanLedEffect, fanLedColor)
-            startFanLedService()
-        } else {
-            HardwareController.setFanLedEnabled(false)
-            stopFanLedService()
-        }
+        val normalLedsAllowedOnLaunch =
+            !prefs().getBoolean("game_mode_led_override_active", false) &&
+            !prefs().getBoolean("call_mode_led_override_active", false)
 
-        if (logoLedEnabled) {
-            HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
-        } else {
-            HardwareController.setLogoLedEnabled(false)
-        }
+        if (normalLedsAllowedOnLaunch) {
+            if (fanLedEnabled) {
+                applyFanLedSelection(fanLedEffect, fanLedColor)
+                startFanLedService()
+            } else {
+                HardwareController.setFanLedEnabled(false)
+                stopFanLedService()
+            }
 
-        if (shoulderLedEnabled) {
-            HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
+            if (logoLedEnabled) {
+                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+            } else {
+                HardwareController.setLogoLedEnabled(false)
+            }
+
+            if (shoulderLedEnabled) {
+                HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
+            } else {
+                HardwareController.setShoulderLedEnabled(false)
+            }
         } else {
-            HardwareController.setShoulderLedEnabled(false)
+            android.util.Log.i("RedmagicNormalLed", "MainActivity skipped launch normal LED restore because another mode owns LEDs")
         }
 
         if (pumpEnabled) {
