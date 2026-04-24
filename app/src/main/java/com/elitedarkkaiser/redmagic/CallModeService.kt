@@ -98,21 +98,7 @@ class CallModeService : Service() {
     private fun applyCallProfile() {
         val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
-        val profile = ModeHardwareProfile(
-            fanEnabled = prefs.getBoolean("call_mode_fan_enabled", false),
-            fanLevel = prefs.getInt("call_mode_fan_level", 0),
-            pumpEnabled = prefs.getBoolean("call_mode_pump_enabled", false),
-            pumpProfile = prefs.getString("call_mode_pump_profile", "slow") ?: "slow",
-            fanLedEnabled = prefs.getBoolean("call_mode_fan_led_enabled", true),
-            fanLedEffect = prefs.getString("call_mode_fan_led_effect", "steady") ?: "steady",
-            fanLedColor = prefs.getInt("call_mode_fan_led_color", prefs.getInt("fan_led_color", 1)),
-            logoLedEnabled = prefs.getBoolean("call_mode_logo_led_enabled", true),
-            logoLedEffect = prefs.getString("call_mode_logo_led_effect", "steady") ?: "steady",
-            logoLedColor = prefs.getInt("call_mode_logo_led_color", prefs.getInt("logo_led_color", 1)),
-            shoulderLedEnabled = prefs.getBoolean("call_mode_shoulder_led_enabled", true),
-            shoulderLedEffect = prefs.getString("call_mode_shoulder_led_effect", "steady") ?: "steady",
-            shoulderLedColor = prefs.getInt("call_mode_shoulder_led_color", prefs.getInt("shoulder_led_color", 8))
-        )
+        val profile = CallModeProfileBuilder.build(prefs)
 
         ModeHardwareApplier.apply(profile)
 
