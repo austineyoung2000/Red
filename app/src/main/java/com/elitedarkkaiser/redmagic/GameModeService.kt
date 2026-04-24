@@ -210,70 +210,30 @@ class GameModeService : Service() {
         handler.postDelayed({ applyOnce("750ms") }, 750L)
     }
     private fun restoreNormalProfile() {
-        val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
         val fanEnabled = prefs.getBoolean("fan_enabled", false)
         val fanLevel = prefs.getInt("fan_level", 0)
         val pumpEnabled = prefs.getBoolean("pump_enabled", false)
         val pumpProfile = prefs.getString("pump_profile", "quick") ?: "quick"
 
-        val fanLedEnabled = prefs.getBoolean("fan_led_enabled", false)
-        val fanLedEffect = prefs.getString("fan_led_effect", "steady") ?: "steady"
-        val fanLedColor = prefs.getInt("fan_led_color", 1)
-
-        val logoLedEnabled = prefs.getBoolean("logo_led_enabled", true)
-        val logoLedEffect = prefs.getString("logo_led_effect", "steady") ?: "steady"
-        val logoLedColor = prefs.getInt("logo_led_color", 1)
-
-        val shoulderLedEnabled = prefs.getBoolean("shoulder_led_enabled", true)
-        val shoulderLedEffect = prefs.getString("shoulder_led_effect", "breathe") ?: "breathe"
-        val shoulderLedColor = prefs.getInt("shoulder_led_color", 8)
-
-        fun restoreOnce(reason: String) {
-            if (fanEnabled) {
-                HardwareController.setFanLevel(fanLevel)
-            } else {
-                HardwareController.enableFan(false)
-            }
-
-            if (pumpEnabled) {
-                HardwareController.setPumpProfile(pumpProfile)
-            } else {
-                HardwareController.enablePump(false)
-            }
-
-            if (fanLedEnabled) {
-                HardwareController.setFanLedEnabled(true)
-                if (fanLedEffect.startsWith("preset:")) {
-                    HardwareController.setFanLedStockPreset(fanLedEffect.removePrefix("preset:"))
-                } else {
-                    HardwareController.setFanLedEffect(fanLedEffect, fanLedColor)
-                }
-            } else {
-                HardwareController.setFanLedEnabled(false)
-            }
-
-            if (logoLedEnabled) {
-                HardwareController.setLogoLedEnabled(true)
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
-            } else {
-                HardwareController.setLogoLedEnabled(false)
-            }
-
-            if (shoulderLedEnabled) {
-                HardwareController.setShoulderLedEnabled(true)
-                HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
-            } else {
-                HardwareController.setShoulderLedEnabled(false)
-            }
-
-            android.util.Log.i(
-                "RedmagicGameMode",
-                "restore[$reason] fan=$fanLedEnabled/$fanLedEffect/$fanLedColor logo=$logoLedEnabled/$logoLedEffect/$logoLedColor shoulder=$shoulderLedEnabled/$shoulderLedEffect/$shoulderLedColor"
-            )
+        if (fanEnabled) {
+            HardwareController.setFanLevel(fanLevel)
+        } else {
+            HardwareController.enableFan(false)
         }
 
-        restoreOnce("now")
-        handler.postDelayed({ restoreOnce("750ms") }, 750L)
+        if (pumpEnabled) {
+            HardwareController.setPumpProfile(pumpProfile)
+        } else {
+            HardwareController.enablePump(false)
+        }
+
+        val anyLedEnabled = NormalLedApplier.apply(prefs)
+        if (anyLedEnabled) {
+            startService(Intent(this, FanLedService::class.java))
+        }
+
+        android.util.Log.i("RedmagicGameMode", "restored normal profile after game")
     }
 }

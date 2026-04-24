@@ -172,46 +172,27 @@ class CallModeService : Service() {
     }
 
     private fun restoreNormalProfile() {
-        val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
         val fanEnabled = prefs.getBoolean("fan_enabled", false)
         val fanLevel = prefs.getInt("fan_level", 0)
-
         val pumpEnabled = prefs.getBoolean("pump_enabled", false)
         val pumpProfile = prefs.getString("pump_profile", "quick") ?: "quick"
 
-        val fanLedEnabled = prefs.getBoolean("fan_led_enabled", false)
-        val fanLedEffect = prefs.getString("fan_led_effect", "steady") ?: "steady"
-        val fanLedColor = prefs.getInt("fan_led_color", 1)
-
-        val logoLedEnabled = prefs.getBoolean("logo_led_enabled", true)
-        val logoLedEffect = prefs.getString("logo_led_effect", "steady") ?: "steady"
-        val logoLedColor = prefs.getInt("logo_led_color", 1)
-
-        val shoulderLedEnabled = prefs.getBoolean("shoulder_led_enabled", true)
-        val shoulderLedEffect = prefs.getString("shoulder_led_effect", "breathe") ?: "breathe"
-        val shoulderLedColor = prefs.getInt("shoulder_led_color", 8)
-
-        if (fanEnabled) HardwareController.setFanLevel(fanLevel) else HardwareController.enableFan(false)
-        if (pumpEnabled) HardwareController.setPumpProfile(pumpProfile) else HardwareController.enablePump(false)
-
-        if (fanLedEnabled) applyFanLed(fanLedEffect, fanLedColor) else HardwareController.setFanLedEnabled(false)
-
-        if (logoLedEnabled) {
-            HardwareController.setLogoLedEnabled(true)
-            HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
+        if (fanEnabled) {
+            HardwareController.setFanLevel(fanLevel)
         } else {
-            HardwareController.setLogoLedEnabled(false)
+            HardwareController.enableFan(false)
         }
 
-        if (shoulderLedEnabled) {
-            HardwareController.setShoulderLedEnabled(true)
-            HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
+        if (pumpEnabled) {
+            HardwareController.setPumpProfile(pumpProfile)
         } else {
-            HardwareController.setShoulderLedEnabled(false)
+            HardwareController.enablePump(false)
         }
 
-        if (fanLedEnabled || logoLedEnabled || shoulderLedEnabled) {
+        val anyLedEnabled = NormalLedApplier.apply(prefs)
+        if (anyLedEnabled) {
             startService(Intent(this, FanLedService::class.java))
         }
 
