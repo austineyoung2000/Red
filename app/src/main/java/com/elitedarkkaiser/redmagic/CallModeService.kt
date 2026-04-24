@@ -123,12 +123,7 @@ class CallModeService : Service() {
     }
 
     private fun restoreNormalProfile() {
-        val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
-
-        val anyLedEnabled = NormalHardwareRestorer.restore(prefs)
-        if (anyLedEnabled) {
-            startService(Intent(this, FanLedService::class.java))
-        }
+        NormalLedRestoreRunner.restore(this)
 
         android.util.Log.i("RedmagicNormalRestore", "restored normal profile")
     }
