@@ -195,28 +195,11 @@ class GameModeService : Service() {
     private fun restoreNormalProfile() {
         val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
-        val fanEnabled = prefs.getBoolean("fan_enabled", false)
-        val fanLevel = prefs.getInt("fan_level", 0)
-        val pumpEnabled = prefs.getBoolean("pump_enabled", false)
-        val pumpProfile = prefs.getString("pump_profile", "quick") ?: "quick"
-
-        if (fanEnabled) {
-            HardwareController.setFanLevel(fanLevel)
-        } else {
-            HardwareController.enableFan(false)
-        }
-
-        if (pumpEnabled) {
-            HardwareController.setPumpProfile(pumpProfile)
-        } else {
-            HardwareController.enablePump(false)
-        }
-
-        val anyLedEnabled = NormalLedApplier.apply(prefs)
+        val anyLedEnabled = NormalHardwareRestorer.restore(prefs)
         if (anyLedEnabled) {
             startService(Intent(this, FanLedService::class.java))
         }
 
-        android.util.Log.i("RedmagicGameMode", "restored normal profile after game")
+        android.util.Log.i("RedmagicNormalRestore", "restored normal profile")
     }
 }
