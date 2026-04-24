@@ -25,7 +25,9 @@ class GameModeService : Service() {
                     val callModeOwnsHardware = prefs.getBoolean(PrefsKeys.CALL_LED_OWNER, false)
                     val forceGameReapply = prefs.getBoolean("force_game_mode_reapply", false)
 
-                    if (gameModeActiveFor != currentPkg) {
+                    val enteringGame = gameModeActiveFor != currentPkg
+
+                    if (enteringGame) {
                         gameModeActiveFor = currentPkg
                         prefs.edit()
                             .putBoolean(PrefsKeys.GAME_LED_OWNER, true)
@@ -33,7 +35,7 @@ class GameModeService : Service() {
                         stopService(Intent(this@GameModeService, FanLedService::class.java))
                     }
 
-                    if (!callModeOwnsHardware && (forceGameReapply || gameModeActiveFor == currentPkg)) {
+                    if (!callModeOwnsHardware && (enteringGame || forceGameReapply)) {
                         prefs.edit().putBoolean("force_game_mode_reapply", false).apply()
                         applyGameModeProfile()
                     }
