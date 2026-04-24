@@ -15,6 +15,14 @@ class FanLedRestoreWorker(
             Context.MODE_PRIVATE
         )
 
+
+        val gameOwns = prefs.getBoolean("game_mode_led_override_active", false)
+        val callOwns = prefs.getBoolean("call_mode_led_override_active", false)
+
+        if (gameOwns || callOwns) {
+            return Result.success()
+        }
+
         val enabled = prefs.getBoolean("fan_led_enabled", false)
         val effect = prefs.getString("fan_led_effect", "steady") ?: "steady"
         val color = prefs.getInt("fan_led_color", 5)
