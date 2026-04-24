@@ -41,11 +41,11 @@ class GameModeService : Service() {
                     }
                 } else if (!currentPkg.isNullOrBlank()) {
                     if (gameModeActiveFor != null) {
-                        restoreNormalProfile()
                         getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
                             .edit()
                             .putBoolean(PrefsKeys.GAME_LED_OWNER, false)
                             .apply()
+                        restoreNormalProfile()
                         gameModeActiveFor = null
                     }
                 }
@@ -64,11 +64,11 @@ class GameModeService : Service() {
     override fun onDestroy() {
         handler.removeCallbacks(pollRunnable)
         if (gameModeActiveFor != null) {
-            restoreNormalProfile()
             getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
                 .edit()
                 .putBoolean(PrefsKeys.GAME_LED_OWNER, false)
                 .apply()
+            restoreNormalProfile()
             gameModeActiveFor = null
         }
         super.onDestroy()
