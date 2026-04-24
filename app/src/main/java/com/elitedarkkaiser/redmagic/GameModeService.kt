@@ -30,6 +30,7 @@ class GameModeService : Service() {
                         prefs.edit()
                             .putBoolean("game_mode_led_override_active", true)
                             .apply()
+                        stopService(Intent(this@GameModeService, FanLedService::class.java))
                     }
 
                     if (!callModeOwnsHardware && (forceGameReapply || gameModeActiveFor == currentPkg)) {

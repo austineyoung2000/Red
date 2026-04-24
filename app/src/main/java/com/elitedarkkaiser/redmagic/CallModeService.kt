@@ -40,6 +40,7 @@ class CallModeService : Service() {
                 if (inCall && !callModeActive) {
                     callModeActive = true
                     prefs.edit().putBoolean("call_mode_led_override_active", true).apply()
+                    stopService(Intent(this@CallModeService, FanLedService::class.java))
                     applyCallProfile()
                     handler.postDelayed({
                         if (callModeActive && isInAnyCall()) {

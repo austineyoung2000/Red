@@ -102,7 +102,7 @@ class FanLedService : Service() {
         if (!normalProfileAllowed) {
             android.util.Log.i(
                 "RedmagicNormalLed",
-                "Normal LED profile skipped because another mode owns LEDs"
+                "Normal LED profile blocked because Game/Call Mode owns LEDs"
             )
             stopSelf()
             return
