@@ -41,9 +41,7 @@ class CallModeService : Service() {
                 if (inCall && !callModeActive) {
                     callModeActive = true
                     prefs.edit().putBoolean(PrefsKeys.CALL_LED_OWNER, true).apply()
-                    WorkManager.getInstance(this@CallModeService).cancelUniqueWork("fan_led_restore_short")
-                    WorkManager.getInstance(this@CallModeService).cancelUniqueWork("fan_led_restore_long")
-                    WorkManager.getInstance(this@CallModeService).cancelUniqueWork("fan_led_restore")
+                    FanLedRestoreWork.cancelAll(this@CallModeService)
                     stopService(Intent(this@CallModeService, FanLedService::class.java))
                     applyCallProfile()
                     handler.postDelayed({
