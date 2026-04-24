@@ -1988,6 +1988,7 @@ if (!isSupportedDevice()) {
                         HardwareController.setPumpProfile(pumpProfile)
                         startAutoPumpService()
                     } else {
+                        savePumpState()
                         stopAutoPumpService()
                     }
                     refreshAutoPumpUi()
