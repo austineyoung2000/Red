@@ -1138,9 +1138,7 @@ if (!isSupportedDevice()) {
     }
 
     private fun startFanLedService() {
-        val normalLedsAllowed =
-            !prefs().getBoolean("game_mode_led_override_active", false) &&
-            !prefs().getBoolean("call_mode_led_override_active", false)
+        val normalLedsAllowed = LedOwnership.normalAllowed(prefs())
 
         if (!normalLedsAllowed) {
             android.util.Log.i("RedmagicNormalLed", "Blocked normal LED service start because another mode owns LEDs")
@@ -1482,9 +1480,7 @@ if (!isSupportedDevice()) {
         useFahrenheit = isUseFahrenheitSaved()
         autoPumpEnabled = isAutoPumpEnabledSaved()
 
-        val normalLedsAllowedOnLaunch =
-            !prefs().getBoolean("game_mode_led_override_active", false) &&
-            !prefs().getBoolean("call_mode_led_override_active", false)
+        val normalLedsAllowedOnLaunch = LedOwnership.normalAllowed(prefs())
 
         if (normalLedsAllowedOnLaunch) {
             if (fanLedEnabled) {
