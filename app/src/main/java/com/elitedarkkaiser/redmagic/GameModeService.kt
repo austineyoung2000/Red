@@ -161,44 +161,27 @@ class GameModeService : Service() {
         fun applyOnce(reason: String) {
             if (gameModeActiveFor != pkg) return
 
-            if (fanEnabled) {
-                HardwareController.setFanLevel(fanLevel)
-            } else {
-                HardwareController.enableFan(false)
-            }
+            val modeProfile = ModeHardwareProfile(
+                fanEnabled = fanEnabled,
+                fanLevel = fanLevel,
+                pumpEnabled = pumpEnabled,
+                pumpProfile = pumpProfile,
+                fanLedEnabled = fanLedEnabled,
+                fanLedEffect = fanLedEffect,
+                fanLedColor = fanLedColor,
+                fanLedPresetValue =
+                    if (fanLedModeType == "preset" && fanLedPresetValue.isNotBlank())
+                        fanLedPresetValue
+                    else "",
+                logoLedEnabled = logoLedEnabled,
+                logoLedEffect = logoLedEffect,
+                logoLedColor = logoLedColor,
+                shoulderLedEnabled = shoulderLedEnabled,
+                shoulderLedEffect = shoulderLedEffect,
+                shoulderLedColor = shoulderLedColor
+            )
 
-            if (pumpEnabled) {
-                HardwareController.setPumpProfile(pumpProfile)
-            } else {
-                HardwareController.enablePump(false)
-            }
-
-            if (fanLedEnabled) {
-                HardwareController.setFanLedEnabled(true)
-                if (fanLedModeType == "preset" && fanLedPresetValue.isNotBlank()) {
-                    HardwareController.setFanLedStockPreset(fanLedPresetValue)
-                } else if (fanLedEffect.startsWith("preset:")) {
-                    HardwareController.setFanLedStockPreset(fanLedEffect.removePrefix("preset:"))
-                } else {
-                    HardwareController.setFanLedEffect(fanLedEffect, fanLedColor)
-                }
-            } else {
-                HardwareController.setFanLedEnabled(false)
-            }
-
-            if (logoLedEnabled) {
-                HardwareController.setLogoLedEnabled(true)
-                HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
-            } else {
-                HardwareController.setLogoLedEnabled(false)
-            }
-
-            if (shoulderLedEnabled) {
-                HardwareController.setShoulderLedEnabled(true)
-                HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
-            } else {
-                HardwareController.setShoulderLedEnabled(false)
-            }
+            ModeHardwareApplier.apply(modeProfile)
 
             android.util.Log.i(
                 "RedmagicGameMode",
