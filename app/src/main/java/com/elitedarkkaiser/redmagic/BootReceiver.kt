@@ -61,7 +61,7 @@ class BootReceiver : BroadcastReceiver() {
 
         val pumpEnabled = prefs.getBoolean("pump_enabled", false)
         val pumpProfile = prefs.getString("pump_profile", "quick") ?: "quick"
-        val autoPumpEnabled = prefs.getBoolean("auto_pump_enabled", false)
+        val autoPumpEnabled = false
         val autoFanEnabled = prefs.getBoolean("auto_fan_curve_enabled", false)
 
         val anyLedEnabled = NormalLedApplier.apply(prefs)
@@ -75,8 +75,10 @@ class BootReceiver : BroadcastReceiver() {
             HardwareController.enablePump(false)
         }
 
-        if (autoPumpEnabled) {
-            context.startService(Intent(context, AutoPumpService::class.java))
+        if (MicroPumpController.isSmartSaved(context)) {
+            context.startService(Intent(context, MicroPumpService::class.java))
+        } else if (MicroPumpController.isEnabledSaved(context)) {
+            MicroPumpController.setEnabled(context, true)
         }
 
         if (autoFanEnabled) {

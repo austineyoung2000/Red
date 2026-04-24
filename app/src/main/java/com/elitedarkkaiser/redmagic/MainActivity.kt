@@ -1126,6 +1126,27 @@ if (!isSupportedDevice()) {
         stopService(Intent(this, AutoPumpService::class.java))
     }
 
+    private fun startMicroPumpService() {
+        val intent = Intent(this, MicroPumpService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
+    }
+
+    private fun stopMicroPumpService() {
+        stopService(Intent(this, MicroPumpService::class.java))
+    }
+
+    private fun microPumpStatusText(): String {
+        val enabled = MicroPumpController.isEnabledSaved(this)
+        val smart = MicroPumpController.isSmartSaved(this)
+        return "Pump: " + (if (enabled) "ON" else "OFF") +
+            " • Smart: " + (if (smart) "ON" else "OFF") +
+            " • " + MicroPumpController.readStatus()
+    }
+
     private fun enqueueFanLedRestore(delaySeconds: Long = 2) {
         val request = OneTimeWorkRequestBuilder<FanLedRestoreWorker>()
             .setInitialDelay(delaySeconds, TimeUnit.SECONDS)
@@ -1785,6 +1806,101 @@ if (!isSupportedDevice()) {
             }
         }
 
+        val microPumpCard = sectionPanel().apply {
+            addView(sectionHeader("◌", "MICRO PUMP CONTROL"))
+            addView(bodyText("Control the RedMagic liquid cooling micro pump using the dedicated hardware path. Smart mode keeps it active in the background and restores after boot."))
+
+            val statusText = TextView(this@MainActivity).apply {
+                text = microPumpStatusText()
+                textSize = 12f
+                setTextColor(textSecondary)
+                setPadding(0, dp(8), 0, dp(10))
+            }
+
+            val manualSwitch = android.widget.Switch(this@MainActivity).apply {
+                isChecked = MicroPumpController.isEnabledSaved(this@MainActivity)
+            }
+
+            val smartSwitch = android.widget.Switch(this@MainActivity).apply {
+                isChecked = MicroPumpController.isSmartSaved(this@MainActivity)
+            }
+
+            fun refreshMicroPumpUi() {
+                statusText.text = microPumpStatusText()
+                manualSwitch.isChecked = MicroPumpController.isEnabledSaved(this@MainActivity)
+                smartSwitch.isChecked = MicroPumpController.isSmartSaved(this@MainActivity)
+            }
+
+            manualSwitch.setOnCheckedChangeListener { _, checked ->
+                if (checked) {
+                    MicroPumpController.saveSmart(this@MainActivity, false)
+                    stopMicroPumpService()
+                    MicroPumpController.setEnabled(this@MainActivity, true)
+                } else {
+                    MicroPumpController.saveSmart(this@MainActivity, false)
+                    stopMicroPumpService()
+                    MicroPumpController.setEnabled(this@MainActivity, false)
+                }
+                refreshStatus()
+                statusText.text = microPumpStatusText()
+            }
+
+            smartSwitch.setOnCheckedChangeListener { _, checked ->
+                if (checked) {
+                    MicroPumpController.saveSmart(this@MainActivity, true)
+                    MicroPumpController.setEnabled(this@MainActivity, true)
+                    startMicroPumpService()
+                } else {
+                    MicroPumpController.saveSmart(this@MainActivity, false)
+                    stopMicroPumpService()
+                    MicroPumpController.setEnabled(this@MainActivity, manualSwitch.isChecked)
+                }
+                refreshStatus()
+                statusText.text = microPumpStatusText()
+            }
+
+            val manualRow = LinearLayout(this@MainActivity).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                addView(TextView(this@MainActivity).apply {
+                    text = "Enable micro pump"
+                    textSize = 14f
+                    setTextColor(textPrimary)
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                addView(manualSwitch)
+            }
+
+            val smartRow = LinearLayout(this@MainActivity).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(0, dp(8), 0, 0)
+                addView(LinearLayout(this@MainActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    addView(TextView(this@MainActivity).apply {
+                        text = "Smart micro pump"
+                        textSize = 14f
+                        setTextColor(textPrimary)
+                    })
+                    addView(TextView(this@MainActivity).apply {
+                        text = "Turns pump on when hot, backs off when cooled, and survives app close/reboot."
+                        textSize = 12f
+                        setTextColor(textSecondary)
+                    })
+                }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                addView(smartSwitch)
+            }
+
+            val refreshBtn = actionButton("REFRESH PUMP STATUS") {
+                refreshMicroPumpUi()
+            }
+
+            addView(statusText)
+            addView(manualRow)
+            addView(smartRow)
+            addView(space(dp(10)))
+            addView(singleRow(refreshBtn))
+        }
+
         val coolingCard = sectionPanel().apply {
             addView(sectionHeader("❄", "COOLING"))
             addView(tempText)
@@ -2017,7 +2133,7 @@ if (!isSupportedDevice()) {
             pumpSection.addView(pumpRateRow)
             pumpSection.addView(autoPumpRow)
 
-            addView(pumpSection)
+            addView(microPumpCard)
             addView(spacer(dp(16)))
             addView(sectionHeader("▦", "FAN CURVE"))
             addView(autoCurveCheck)

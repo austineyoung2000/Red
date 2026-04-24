@@ -76,5 +76,10 @@
 
         <service android:name=".GameModeService" android:exported="false" />
         <service android:name=".CallModeService" android:exported="false" />
+
+        <service
+            android:name=".MicroPumpService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
     </application>
 </manifest>
