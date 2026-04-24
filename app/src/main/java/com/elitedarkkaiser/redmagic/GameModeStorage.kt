@@ -3,7 +3,7 @@ package com.elitedarkkaiser.redmagic
 import android.content.Context
 import org.json.JSONObject
 
-private const val GAME_PREFS_NAME = "redmagic_hw_controls_prefs"
+private val GAME_PREFS_NAME = PrefsKeys.HW_PREFS
 private const val GAME_MODE_PACKAGES_KEY = "game_mode_packages"
 
 fun saveProfileForPackageStorage(

@@ -108,7 +108,7 @@ class MainActivity : Activity() {
     private var pumpProfile = "quick"
     private var autoPumpEnabled = false
 
-    private val prefsName = "redmagic_hw_controls_prefs"
+    private val prefsName = PrefsKeys.HW_PREFS
     private val skipSupportedDialogKey = "skip_supported_dialog"
     private val autoFanEnabledKey = "auto_fan_enabled"
     private val realTimePreviewEnabledKey = "realtime_preview_enabled"
