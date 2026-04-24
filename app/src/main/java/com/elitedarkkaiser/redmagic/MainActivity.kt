@@ -2075,6 +2075,7 @@ if (!isSupportedDevice()) {
 
     private fun applyFanLedPreviewIfEnabled() {
         if (!realTimePreviewEnabled) return
+        if (!LedOwnership.normalAllowed(prefs())) return
         if (fanLedEnabled) {
             applyFanLedSelection(fanLedEffect, fanLedColor)
         } else {
@@ -2084,6 +2085,7 @@ if (!isSupportedDevice()) {
 
     private fun applyLogoLedPreviewIfEnabled() {
         if (!realTimePreviewEnabled) return
+        if (!LedOwnership.normalAllowed(prefs())) return
         if (logoLedEnabled) {
             HardwareController.setLogoLedEffect(logoLedEffect, logoLedColor)
         } else {
@@ -2093,6 +2095,7 @@ if (!isSupportedDevice()) {
 
     private fun applyShoulderLedPreviewIfEnabled() {
         if (!realTimePreviewEnabled) return
+        if (!LedOwnership.normalAllowed(prefs())) return
         if (shoulderLedEnabled) {
             HardwareController.setShoulderLedEffect(shoulderLedEffect, shoulderLedColor)
         } else {
