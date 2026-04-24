@@ -66,6 +66,18 @@ class MicroPumpService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun applyRule() {
+        if (MicroPumpController.isForceActive(this)) {
+            MicroPumpController.setEnabled(this, true)
+            pumpOn = true
+            val remainingMin = ((MicroPumpController.forceUntil(this) - System.currentTimeMillis()) / 60000L).coerceAtLeast(0L)
+            updateNotification("Micro Pump forced ON • ${remainingMin} min left")
+            return
+        } else if (!MicroPumpController.isSmartSaved(this)) {
+            MicroPumpController.setEnabled(this, false)
+            stopSelf()
+            return
+        }
+
         val tempF = DashboardSnapshot.readCpuTempF().toFloatOrNull()
         if (tempF == null) {
             updateNotification("Micro Pump active • Temp unknown")

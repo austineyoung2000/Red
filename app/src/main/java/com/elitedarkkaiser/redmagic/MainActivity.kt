@@ -1896,15 +1896,9 @@ if (!isSupportedDevice()) {
 
             val forceOnBtn = actionButton("FORCE ON 10 MIN") {
                 MicroPumpController.saveSmart(this@MainActivity, false)
-                stopMicroPumpService()
+                MicroPumpController.saveForceUntil(this@MainActivity, System.currentTimeMillis() + 10L * 60L * 1000L)
                 MicroPumpController.setEnabled(this@MainActivity, true)
-
-                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                    if (!MicroPumpController.isSmartSaved(this@MainActivity)) {
-                        MicroPumpController.setEnabled(this@MainActivity, false)
-                        refreshMicroPumpUi()
-                    }
-                }, 10L * 60L * 1000L)
+                startMicroPumpService()
 
                 refreshStatus()
                 refreshMicroPumpUi()

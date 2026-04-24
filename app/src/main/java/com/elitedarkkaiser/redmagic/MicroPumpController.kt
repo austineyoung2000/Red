@@ -5,6 +5,7 @@ import android.content.Context
 object MicroPumpController {
     const val KEY_ENABLED = "micro_pump_enabled"
     const val KEY_SMART_ENABLED = "micro_pump_smart_enabled"
+    const val KEY_FORCE_UNTIL = "micro_pump_force_until"
 
     private const val PROC_PATH = "/proc/driver/micropump/enable"
     private const val SETTINGS_KEY = "liquid_cooling_off_on"
@@ -26,6 +27,18 @@ object MicroPumpController {
         prefs(context).edit()
             .putBoolean(KEY_SMART_ENABLED, enabled)
             .putBoolean("auto_pump_enabled", false)
+            .apply()
+    }
+
+    fun forceUntil(context: Context): Long =
+        prefs(context).getLong(KEY_FORCE_UNTIL, 0L)
+
+    fun isForceActive(context: Context): Boolean =
+        System.currentTimeMillis() < forceUntil(context)
+
+    fun saveForceUntil(context: Context, untilMs: Long) {
+        prefs(context).edit()
+            .putLong(KEY_FORCE_UNTIL, untilMs)
             .apply()
     }
 
