@@ -17,7 +17,7 @@ class CallModeService : Service() {
     private val pollRunnable = object : Runnable {
         override fun run() {
             try {
-                val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+                val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
                 val enabled = prefs.getBoolean("call_mode_enabled", false)
 
                 if (!enabled) {
@@ -82,7 +82,7 @@ class CallModeService : Service() {
     override fun onDestroy() {
         handler.removeCallbacks(pollRunnable)
         if (callModeActive) {
-            val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+            val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
             val gameWasActive = prefs.getBoolean("game_mode_led_override_active", false)
             prefs.edit()
                 .putBoolean("call_mode_led_override_active", false)
@@ -126,7 +126,7 @@ class CallModeService : Service() {
     }
 
     private fun applyCallProfile() {
-        val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
         val fanEnabled = prefs.getBoolean("call_mode_fan_enabled", false)
         val fanLevel = prefs.getInt("call_mode_fan_level", 0)

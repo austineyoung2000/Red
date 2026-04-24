@@ -18,7 +18,7 @@ class GameModeService : Service() {
         override fun run() {
             try {
                 val currentPkg = getForegroundPackageName()
-                val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+                val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
                 val tracked = prefs.getStringSet("game_mode_packages", emptySet()) ?: emptySet()
 
                 if (!currentPkg.isNullOrBlank() && tracked.contains(currentPkg)) {
@@ -40,7 +40,7 @@ class GameModeService : Service() {
                 } else if (!currentPkg.isNullOrBlank()) {
                     if (gameModeActiveFor != null) {
                         restoreNormalProfile()
-                        getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+                        getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
                             .edit()
                             .putBoolean("game_mode_led_override_active", false)
                             .apply()
@@ -63,7 +63,7 @@ class GameModeService : Service() {
         handler.removeCallbacks(pollRunnable)
         if (gameModeActiveFor != null) {
             restoreNormalProfile()
-            getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+            getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
                 .edit()
                 .putBoolean("game_mode_led_override_active", false)
                 .apply()
@@ -108,7 +108,7 @@ class GameModeService : Service() {
     
 
     private fun getProfileForPackage(pkg: String): Map<String, Any> {
-        val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
         val json = prefs.getString("game_profile_$pkg", null) ?: return emptyMap()
 
         return try {
@@ -133,7 +133,7 @@ class GameModeService : Service() {
         }
     }
     private fun applyGameModeProfile() {
-        val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
         val pkg = gameModeActiveFor ?: return
         val profile = getProfileForPackage(pkg)
