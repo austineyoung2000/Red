@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
@@ -38,6 +39,12 @@ class AutoPumpService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("auto_pump_enabled", true)
+            .putBoolean("pump_enabled", true)
+            .apply()
+
         handler.removeCallbacks(pollRunnable)
         handler.post(pollRunnable)
         return START_STICKY

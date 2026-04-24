@@ -1447,7 +1447,11 @@ if (!isSupportedDevice()) {
             android.util.Log.i("RedmagicNormalLed", "MainActivity skipped launch normal LED restore because another mode owns LEDs")
         }
 
-        if (pumpEnabled) {
+        if (autoPumpEnabled) {
+            pumpEnabled = true
+            savePumpState()
+            startAutoPumpService()
+        } else if (pumpEnabled) {
             HardwareController.setPumpProfile(pumpProfile)
         } else {
             HardwareController.enablePump(false)
