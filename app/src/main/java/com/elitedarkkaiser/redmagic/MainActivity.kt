@@ -2462,6 +2462,26 @@ addView(row(configureTriggersBtn, trigEnableBtn))
 
         container.addView(previewCard)
 
+        val diagnosticsText = TextView(this@MainActivity).apply {
+            text = LedDiagnostics.build(this@MainActivity)
+            textSize = 12f
+            setTextColor(textSecondary)
+            setPadding(0, dp(8), 0, dp(10))
+        }
+
+        val refreshDiagnosticsBtn = actionButton("REFRESH LED DIAGNOSTICS") {
+            diagnosticsText.text = LedDiagnostics.build(this@MainActivity)
+        }
+
+        val diagnosticsCard = sectionPanel().apply {
+            addView(sectionHeader("ⓘ", "LED DIAGNOSTICS"))
+            addView(bodyText("Shows which mode currently owns LED hardware and what saved normal LED values are being used."))
+            addView(diagnosticsText)
+            addView(singleRow(refreshDiagnosticsBtn))
+        }
+
+        container.addView(diagnosticsCard)
+
         val fanLedCard = sectionPanel().apply {
             addView(sectionHeader("✦", "FAN LED"))
 
