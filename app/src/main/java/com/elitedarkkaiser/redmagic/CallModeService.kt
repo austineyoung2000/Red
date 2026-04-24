@@ -40,6 +40,9 @@ class CallModeService : Service() {
                     prefs.edit().putBoolean(PrefsKeys.CALL_LED_OWNER, true).apply()
                     FanLedRestoreWork.cancelAll(this@CallModeService)
                     stopService(Intent(this@CallModeService, FanLedService::class.java))
+                    stopService(Intent(this@CallModeService, MicroPumpService::class.java))
+                    MicroPumpController.saveForceUntil(this@CallModeService, 0L)
+                    MicroPumpController.setEnabled(this@CallModeService, false)
                     applyCallProfile()
                     handler.postDelayed({
                         if (callModeActive && CallStateMonitor.isInAnyCall(this@CallModeService)) {
@@ -57,6 +60,12 @@ class CallModeService : Service() {
                         .putBoolean(PrefsKeys.CALL_LED_OWNER, false)
                         .putBoolean("force_game_mode_reapply", gameWasActive)
                         .apply()
+                    if (MicroPumpController.isSmartSaved(this@CallModeService)) {
+                        startService(Intent(this@CallModeService, MicroPumpService::class.java))
+                    } else if (MicroPumpController.isEnabledSaved(this@CallModeService)) {
+                        MicroPumpController.setEnabled(this@CallModeService, true)
+                    }
+
                     if (!gameWasActive) {
                         restoreNormalProfile()
                     }
