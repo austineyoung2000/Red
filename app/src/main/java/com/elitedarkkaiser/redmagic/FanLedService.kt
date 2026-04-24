@@ -92,61 +92,21 @@ class FanLedService : Service() {
     }
 
     private fun reapplySavedLedState() {
-        val prefs = getSharedPreferences("redmagic_hw_controls_prefs", Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
 
-        val normalProfileAllowed =
-            !prefs.getBoolean("game_mode_led_override_active", false) &&
-            !prefs.getBoolean("call_mode_led_override_active", false) &&
-            !isCallActiveOrRinging()
-
-        if (!normalProfileAllowed) {
+        if (!LedOwnership.normalAllowed(prefs) || isCallActiveOrRinging()) {
             android.util.Log.i(
                 "RedmagicNormalLed",
-                "Normal LED profile blocked because Game/Call Mode owns LEDs"
+                "Normal LED profile blocked because another mode owns LEDs"
             )
             stopSelf()
             return
         }
 
-        val fanEnabled = prefs.getBoolean("fan_led_enabled", false)
-        val fanEffect = prefs.getString("fan_led_effect", "steady") ?: "steady"
-        val fanColor = prefs.getInt("fan_led_color", 1)
+        val anyLedEnabled = NormalLedApplier.apply(prefs)
 
-        val logoEnabled = prefs.getBoolean("logo_led_enabled", true)
-        val logoEffect = prefs.getString("logo_led_effect", "steady") ?: "steady"
-        val logoColor = prefs.getInt("logo_led_color", 1)
-
-        val shoulderEnabled = prefs.getBoolean("shoulder_led_enabled", true)
-        val shoulderEffect = prefs.getString("shoulder_led_effect", "breathe") ?: "breathe"
-        val shoulderColor = prefs.getInt("shoulder_led_color", 8)
-
-        if (fanEnabled) {
-            HardwareController.setFanLedEffect(fanEffect, fanColor)
-        } else {
-            HardwareController.setFanLedEnabled(false)
-        }
-
-        if (logoEnabled) {
-            HardwareController.setLogoLedEffect(logoEffect, logoColor)
-        } else {
-            HardwareController.setLogoLedEnabled(false)
-        }
-
-        if (shoulderEnabled) {
-            HardwareController.setShoulderLedEffect(shoulderEffect, shoulderColor)
-        } else {
-            HardwareController.setShoulderLedEnabled(false)
-        }
-
-        if (fanEnabled || logoEnabled || shoulderEnabled) {
-            updateNotification(
-                "Normal LED profile active • Fan: " +
-                    (if (fanEnabled) "on" else "off") +
-                    " • Logo: " +
-                    (if (logoEnabled) "on" else "off") +
-                    " • Shoulder: " +
-                    (if (shoulderEnabled) "on" else "off")
-            )
+        if (anyLedEnabled) {
+            updateNotification("Normal LED profile active")
         } else {
             stopSelf()
         }
