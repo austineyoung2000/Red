@@ -84,6 +84,12 @@ class MicroPumpService : Service() {
             return
         }
 
+        val mode = when {
+            tempF >= 105f -> "Performance"
+            tempF >= 95f -> "Balanced"
+            else -> "Silent"
+        }
+
         if (!pumpOn && tempF >= ON_TEMP_F) {
             MicroPumpController.setEnabled(this, true)
             pumpOn = true
@@ -92,7 +98,9 @@ class MicroPumpService : Service() {
             pumpOn = false
         }
 
-        updateNotification("Micro Pump: ${if (pumpOn) "ON" else "OFF"} • ${tempF}°F")
+        updateNotification(
+            "Micro Pump: ${if (pumpOn) "ON" else "OFF"} • $mode • ${tempF}°F"
+        )
     }
 
     private fun buildNotification(text: String): Notification {

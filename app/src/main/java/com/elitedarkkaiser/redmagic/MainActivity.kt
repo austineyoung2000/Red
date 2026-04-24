@@ -1150,7 +1150,16 @@ if (!isSupportedDevice()) {
             " • Force: OFF"
         }
 
+        val tempF = DashboardSnapshot.readCpuTempF().toFloatOrNull()
+        val mode = when {
+            tempF == null -> "Unknown"
+            tempF >= 105f -> "Performance"
+            tempF >= 95f -> "Balanced"
+            else -> "Silent"
+        }
+
         return "Pump: " + (if (enabled) "ON" else "OFF") +
+            " • Mode: " + mode +
             " • Smart: " + (if (smart) "ON" else "OFF") +
             forceText +
             " • " + MicroPumpController.readStatus()
