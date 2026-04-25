@@ -1828,6 +1828,7 @@ if (!isSupportedDevice()) {
                 textSize = 12f
                 setTextColor(textSecondary)
                 setPadding(0, dp(8), 0, dp(10))
+                setLineSpacing(0f, 1.15f)
             }
 
             val manualSwitch = android.widget.Switch(this@MainActivity).apply {
