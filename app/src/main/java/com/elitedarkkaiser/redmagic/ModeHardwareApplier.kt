@@ -8,11 +8,7 @@ object ModeHardwareApplier {
             HardwareController.enableFan(false)
         }
 
-        if (profile.pumpEnabled) {
-            HardwareController.setPumpProfile(profile.pumpProfile)
-        } else {
-            HardwareController.enablePump(false)
-        }
+        MicroPumpController.setEnabled(AppContextHolder.appContext, profile.pumpEnabled)
 
         if (profile.fanLedEnabled) {
             HardwareController.setFanLedEnabled(true)
