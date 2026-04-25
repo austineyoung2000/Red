@@ -2518,6 +2518,55 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         container.addView(shoulderCard)
 
 
+        val chargingModeSummaryText = TextView(this).apply {
+            text = "Charging Mode: " + if (prefs().getBoolean("charging_mode_enabled", false)) "Enabled" else "Disabled"
+            textSize = 13f
+            setTextColor(textSecondary)
+            setPadding(0, dp(2), 0, dp(10))
+        }
+
+        val chargingModeSwitch = android.widget.Switch(this@MainActivity).apply {
+            isChecked = prefs().getBoolean("charging_mode_enabled", false)
+            setOnCheckedChangeListener { _, checked ->
+                prefs().edit().putBoolean("charging_mode_enabled", checked).apply()
+                startService(Intent(this@MainActivity, ChargingModeService::class.java))
+                chargingModeSummaryText.text = "Charging Mode: " + if (checked) "Enabled" else "Disabled"
+                Toast.makeText(
+                    this@MainActivity,
+                    "Charging Mode " + (if (checked) "enabled" else "disabled"),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+        val chargingModeRow = LinearLayout(this@MainActivity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+
+            addView(TextView(this@MainActivity).apply {
+                text = "Enable Charging Mode"
+                textSize = 14f
+                setTextColor(textPrimary)
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+
+            addView(chargingModeSwitch)
+        }
+
+        val editChargingProfileBtn = actionButton("EDIT CHARGING PROFILE") {
+            Toast.makeText(this@MainActivity, "Charging profile editor coming next", Toast.LENGTH_SHORT).show()
+        }
+
+        val chargingModeCard = sectionPanel().apply {
+            addView(sectionHeader("⚡", "CHARGING MODE"))
+            addView(bodyText("Applies a dedicated LED and fan profile while charging. Call Mode is the only mode allowed to override it."))
+            addView(chargingModeSummaryText)
+            addView(chargingModeRow)
+            addView(space(dp(10)))
+            addView(singleRow(editChargingProfileBtn))
+        }
+
+        container.addView(chargingModeCard)
+
         val callModeSummaryText = TextView(this).apply {
             text = callModeProfileSummary()
             textSize = 13f
