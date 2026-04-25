@@ -38,7 +38,6 @@ class MicroPumpService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        MicroPumpController.saveSmart(this, true)
         MicroPumpController.saveEnabled(this, true)
         handler.removeCallbacks(pollRunnable)
         handler.post(pollRunnable)
