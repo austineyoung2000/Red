@@ -1847,9 +1847,14 @@ if (!isSupportedDevice()) {
             }
 
             fun refreshMicroPumpUi() {
+                val smartEnabled = MicroPumpController.isSmartSaved(this@MainActivity)
+
                 statusText.text = microPumpStatusText()
                 manualSwitch.isChecked = MicroPumpController.isEnabledSaved(this@MainActivity)
-                smartSwitch.isChecked = MicroPumpController.isSmartSaved(this@MainActivity)
+                smartSwitch.isChecked = smartEnabled
+
+                manualSwitch.isEnabled = !smartEnabled
+                manualSwitch.alpha = if (smartEnabled) 0.40f else 1f
             }
 
             manualSwitch.setOnCheckedChangeListener { _, checked ->
@@ -1863,7 +1868,7 @@ if (!isSupportedDevice()) {
                     MicroPumpController.setEnabled(this@MainActivity, false)
                 }
                 refreshStatus()
-                statusText.text = microPumpStatusText()
+                refreshMicroPumpUi()
             }
 
             smartSwitch.setOnCheckedChangeListener { _, checked ->
@@ -1877,7 +1882,7 @@ if (!isSupportedDevice()) {
                     MicroPumpController.setEnabled(this@MainActivity, manualSwitch.isChecked)
                 }
                 refreshStatus()
-                statusText.text = microPumpStatusText()
+                refreshMicroPumpUi()
             }
 
             val manualRow = LinearLayout(this@MainActivity).apply {
@@ -1903,7 +1908,7 @@ if (!isSupportedDevice()) {
                         setTextColor(textPrimary)
                     })
                     addView(TextView(this@MainActivity).apply {
-                        text = "Turns pump on when hot, backs off when cooled, and survives app close/reboot."
+                        text = "Automatic mode self-adjusts the pump by temperature. Manual pump toggle is disabled while this is on."
                         textSize = 12f
                         setTextColor(textSecondary)
                     })
