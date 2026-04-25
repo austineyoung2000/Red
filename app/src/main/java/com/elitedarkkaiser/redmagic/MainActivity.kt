@@ -2000,11 +2000,7 @@ if (!isSupportedDevice()) {
                 setOnCheckedChangeListener { _, checked ->
                     pumpEnabled = checked
                     savePumpState()
-                    if (pumpEnabled) {
-                        HardwareController.setPumpProfile(pumpProfile)
-                    } else {
-                        HardwareController.enablePump(false)
-                    }
+                    MicroPumpController.setEnabled(this@MainActivity, pumpEnabled)
                     refreshStatus()
                     refreshSmartPumpStatusViews()
                 }
@@ -2138,7 +2134,7 @@ if (!isSupportedDevice()) {
                     if (checked) {
                         pumpEnabled = true
                         savePumpState()
-                        HardwareController.setPumpProfile(pumpProfile)
+                        MicroPumpController.setEnabled(this@MainActivity, true)
                         startAutoPumpService()
                     } else {
                         savePumpState()
@@ -2989,8 +2985,8 @@ addView(row(configureTriggersBtn, trigEnableBtn))
             currentProfile = { pumpProfile },
             setPumpEnabled = { value -> pumpEnabled = value },
             setPumpProfile = { value -> pumpProfile = value },
-            applyHardwareProfile = { value -> HardwareController.setPumpProfile(value) },
-            disablePump = { HardwareController.enablePump(false) },
+            applyHardwareProfile = { _ -> MicroPumpController.setEnabled(this, true) },
+            disablePump = { MicroPumpController.setEnabled(this, false) },
             savePumpState = { savePumpState() },
             confirmExperimentalPumpThenApply = { confirmExperimentalPumpThenApply() },
             setDialogRefreshPump = { callback -> dialogRefreshPump = callback },
