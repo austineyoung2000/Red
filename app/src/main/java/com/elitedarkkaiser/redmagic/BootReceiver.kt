@@ -67,11 +67,18 @@ class BootReceiver : BroadcastReceiver() {
             context.startService(Intent(context, FanLedService::class.java))
         }
 
-        if (MicroPumpController.isSmartSaved(context)) {
-            context.startService(Intent(context, MicroPumpService::class.java))
-        } else if (MicroPumpController.isEnabledSaved(context)) {
-            MicroPumpController.setEnabled(context, true)
+        fun restoreMicroPump() {
+            if (MicroPumpController.isSmartSaved(context) || MicroPumpController.isForceActive(context)) {
+                context.startService(Intent(context, MicroPumpService::class.java))
+            } else if (MicroPumpController.isEnabledSaved(context)) {
+                MicroPumpController.setEnabled(context, true)
+            }
         }
+
+        restoreMicroPump()
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            restoreMicroPump()
+        }, 10000L)
 
         if (autoFanEnabled) {
             context.startService(Intent(context, AutoFanService::class.java))
