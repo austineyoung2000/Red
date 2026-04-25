@@ -225,6 +225,46 @@ class MainActivity : Activity() {
             .apply()
     }
 
+    private fun getSavedChargingFullModeProfile(): GameModeProfile {
+        fun get(prefix: String, key: String) = "${prefix}_${key}"
+        val prefix = "charging_full_mode"
+
+        return GameModeProfile(
+            fanEnabled = prefs().getBoolean(get(prefix, "fan_enabled"), false),
+            fanLevel = prefs().getInt(get(prefix, "fan_level"), 0),
+            pumpEnabled = false,
+            pumpProfile = "quick",
+            fanLedEnabled = prefs().getBoolean(get(prefix, "fan_led_enabled"), true),
+            fanLedEffect = prefs().getString(get(prefix, "fan_led_effect"), "breathe") ?: "breathe",
+            fanLedColor = prefs().getInt(get(prefix, "fan_led_color"), 2),
+            logoLedEnabled = prefs().getBoolean(get(prefix, "logo_led_enabled"), true),
+            logoLedEffect = prefs().getString(get(prefix, "logo_led_effect"), "breathe") ?: "breathe",
+            logoLedColor = prefs().getInt(get(prefix, "logo_led_color"), 2),
+            shoulderLedEnabled = prefs().getBoolean(get(prefix, "shoulder_led_enabled"), true),
+            shoulderLedEffect = prefs().getString(get(prefix, "shoulder_led_effect"), "breathe") ?: "breathe",
+            shoulderLedColor = prefs().getInt(get(prefix, "shoulder_led_color"), 2)
+        )
+    }
+
+    private fun saveChargingFullModeProfile(profile: GameModeProfile) {
+        val prefix = "charging_full_mode"
+        fun key(name: String) = "${prefix}_${name}"
+
+        prefs().edit()
+            .putBoolean(key("fan_enabled"), profile.fanEnabled)
+            .putInt(key("fan_level"), profile.fanLevel)
+            .putBoolean(key("fan_led_enabled"), profile.fanLedEnabled)
+            .putString(key("fan_led_effect"), profile.fanLedEffect)
+            .putInt(key("fan_led_color"), profile.fanLedColor)
+            .putBoolean(key("logo_led_enabled"), profile.logoLedEnabled)
+            .putString(key("logo_led_effect"), profile.logoLedEffect)
+            .putInt(key("logo_led_color"), profile.logoLedColor)
+            .putBoolean(key("shoulder_led_enabled"), profile.shoulderLedEnabled)
+            .putString(key("shoulder_led_effect"), profile.shoulderLedEffect)
+            .putInt(key("shoulder_led_color"), profile.shoulderLedColor)
+            .apply()
+    }
+
     private fun chargingModeProfileSummary(): String {
         val p = getSavedChargingModeProfile()
         val fanLabel = if (p.fanEnabled) {
@@ -2606,6 +2646,11 @@ addView(row(configureTriggersBtn, trigEnableBtn))
             chargingModeSummaryText.text = chargingModeProfileSummary()
         }
 
+        val editChargingFullProfileBtn = actionButton("EDIT FULL CHARGE PROFILE") {
+            showChargingFullModeProfileDialog()
+            chargingModeSummaryText.text = chargingModeProfileSummary()
+        }
+
         val chargingModeCard = sectionPanel().apply {
             addView(sectionHeader("⚡", "CHARGING MODE"))
             addView(bodyText("Applies a dedicated LED and fan profile while charging. Call Mode is the only mode allowed to override it."))
@@ -2613,6 +2658,8 @@ addView(row(configureTriggersBtn, trigEnableBtn))
             addView(chargingModeRow)
             addView(space(dp(10)))
             addView(singleRow(editChargingProfileBtn))
+            addView(space(dp(8)))
+            addView(singleRow(editChargingFullProfileBtn))
         }
 
         container.addView(chargingModeCard)
@@ -2906,6 +2953,33 @@ addView(row(configureTriggersBtn, trigEnableBtn))
                 .putString("right_trigger", "VOL_UP")
                 .apply()
         }
+    }
+
+    private fun showChargingFullModeProfileDialog() {
+        GameModeUi.showGameModeProfileDialog(
+            activity = this,
+            current = getSavedChargingFullModeProfile(),
+            deps = GameModeUi.Deps(
+                textPrimary = textPrimary,
+                textSecondary = textSecondary,
+                panelColor = panelColor,
+                borderColor = borderColor,
+                panelPressed = panelPressed,
+                accent = accent,
+                typeface = typeface,
+                dp = { value -> dp(value) },
+                roundedBg = { fill, stroke, radius -> roundedBg(fill, stroke, radius) },
+                roundedFill = { color, radius -> roundedFill(color, radius) },
+                filterChip = { label, selected, onClick -> filterChip(label, selected, onClick) },
+                space = { value -> space(value) },
+                colorDotDrawable = { hex, selected -> colorDotDrawable(hex, selected) },
+                colorDotGeneric = { hex, selected, onClick -> colorDotGeneric(hex, selected, onClick) },
+            ),
+            onSaveProfile = { profile ->
+                saveChargingFullModeProfile(profile)
+                startService(Intent(this, ChargingModeService::class.java))
+            }
+        )
     }
 
     private fun showChargingModeProfileDialog() {
