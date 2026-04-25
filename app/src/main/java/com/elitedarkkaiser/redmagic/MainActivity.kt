@@ -59,6 +59,7 @@ class MainActivity : Activity() {
     private lateinit var fanChip: TextView
     private lateinit var rpmChip: TextView
     private lateinit var tempChip: TextView
+    private lateinit var pumpChip: TextView
 
     private lateinit var tempText: TextView
     private lateinit var curveStatusText: TextView
@@ -1642,6 +1643,7 @@ if (!isSupportedDevice()) {
         fanChip = statusChip("FAN --")
         rpmChip = statusChip("RPM --")
         tempChip = statusChip("TEMP --")
+        pumpChip = statusChip("PUMP --")
 
         val statusRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -1662,6 +1664,11 @@ if (!isSupportedDevice()) {
             ).apply { marginEnd = dp(6) })
 
             addView(tempChip, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { marginEnd = dp(6) })
+
+            addView(pumpChip, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             ))
@@ -3676,6 +3683,12 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         fanChip.text = if (fanEnabled) "FAN ON" else "FAN OFF"
         rpmChip.text = "RPM ${rpm ?: "--"}"
         tempChip.text = if (tempF != null) "TEMP ${formatDisplayTempFromF(tempF)}" else "TEMP --"
+        pumpChip.text = when {
+            MicroPumpController.isForceActive(this) -> "PUMP FORCE"
+            MicroPumpController.isSmartSaved(this) -> "PUMP SMART"
+            MicroPumpController.isEnabledSaved(this) -> "PUMP ON"
+            else -> "PUMP OFF"
+        }
 
         tempText.text = if (tempF != null) "Current temp: ${formatDisplayTempFromF(tempF)}" else "Current temp: --"
 
@@ -3683,6 +3696,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         setChipState(fanChip, fanEnabled)
         setChipState(rpmChip, (rpm ?: 0) > 0)
         setChipState(tempChip, tempF != null)
+        setChipState(pumpChip, MicroPumpController.isForceActive(this) || MicroPumpController.isSmartSaved(this) || MicroPumpController.isEnabledSaved(this))
     }
 
     private fun openUrl(url: String) {
