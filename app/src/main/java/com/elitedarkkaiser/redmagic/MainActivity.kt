@@ -266,18 +266,26 @@ class MainActivity : Activity() {
     }
 
     private fun chargingModeProfileSummary(): String {
-        val p = getSavedChargingModeProfile()
-        val fanLabel = if (p.fanEnabled) {
-            when (p.fanLevel) {
-                0, 1 -> "Quiet"
-                4, 5 -> "Turbo"
-                else -> "Balanced"
+        fun fanLabel(p: GameModeProfile): String {
+            return if (p.fanEnabled) {
+                when (p.fanLevel) {
+                    0, 1 -> "Quiet"
+                    4, 5 -> "Turbo"
+                    else -> "Balanced"
+                }
+            } else {
+                "Off"
             }
-        } else {
-            "Off"
         }
 
-        return "Fan $fanLabel • Fan LED ${if (p.fanLedEnabled) "On" else "Off"} • Logo ${if (p.logoLedEnabled) "On" else "Off"} • Shoulder ${if (p.shoulderLedEnabled) "On" else "Off"}"
+        fun ledLabel(p: GameModeProfile): String {
+            return "Fan LED ${if (p.fanLedEnabled) "On" else "Off"} • Logo ${if (p.logoLedEnabled) "On" else "Off"} • Shoulder ${if (p.shoulderLedEnabled) "On" else "Off"}"
+        }
+
+        val charging = getSavedChargingModeProfile()
+        val full = getSavedChargingFullModeProfile()
+
+        return "Charging: Fan ${fanLabel(charging)} • ${ledLabel(charging)}\nFull: Fan ${fanLabel(full)} • ${ledLabel(full)}"
     }
 
     private fun isCallModeEnabledSaved(): Boolean {
