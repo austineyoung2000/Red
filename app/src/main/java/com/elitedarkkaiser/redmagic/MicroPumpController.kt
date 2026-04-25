@@ -19,14 +19,12 @@ object MicroPumpController {
     fun saveEnabled(context: Context, enabled: Boolean) {
         prefs(context).edit()
             .putBoolean(KEY_ENABLED, enabled)
-            .putBoolean("pump_enabled", enabled)
             .apply()
     }
 
     fun saveSmart(context: Context, enabled: Boolean) {
         prefs(context).edit()
             .putBoolean(KEY_SMART_ENABLED, enabled)
-            .putBoolean("auto_pump_enabled", false)
             .apply()
     }
 
