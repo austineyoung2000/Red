@@ -109,7 +109,7 @@ class CallModeService : Service() {
 
         val profile = CallModeProfileBuilder.build(prefs)
 
-        ModeHardwareApplier.apply(profile)
+        ModeHardwareApplier.apply(this@CallModeService, profile)
 
         android.util.Log.i(
             "RedmagicCallMode",

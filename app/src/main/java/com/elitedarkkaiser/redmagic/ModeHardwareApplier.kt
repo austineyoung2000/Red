@@ -1,14 +1,16 @@
 package com.elitedarkkaiser.redmagic
 
+import android.content.Context
+
 object ModeHardwareApplier {
-    fun apply(profile: ModeHardwareProfile) {
+    fun apply(context: Context, profile: ModeHardwareProfile) {
         if (profile.fanEnabled) {
             HardwareController.setFanLevel(profile.fanLevel)
         } else {
             HardwareController.enableFan(false)
         }
 
-        MicroPumpController.setEnabled(AppContextHolder.appContext, profile.pumpEnabled)
+        MicroPumpController.setEnabled(context, profile.pumpEnabled)
 
         if (profile.fanLedEnabled) {
             HardwareController.setFanLedEnabled(true)

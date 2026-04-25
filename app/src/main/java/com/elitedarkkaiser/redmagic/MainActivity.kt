@@ -302,7 +302,6 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppContextHolder.appContext = applicationContext
         
         initDefaultTriggerMappings()
 if (!isSupportedDevice()) {

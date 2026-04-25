@@ -147,7 +147,7 @@ class GameModeService : Service() {
         fun applyOnce(reason: String) {
             if (gameModeActiveFor != pkg) return
 
-            ModeHardwareApplier.apply(modeProfile)
+            ModeHardwareApplier.apply(this@GameModeService, modeProfile)
 
             android.util.Log.i(
                 "RedmagicGameMode",
