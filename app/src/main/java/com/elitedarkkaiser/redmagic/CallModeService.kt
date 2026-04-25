@@ -66,7 +66,9 @@ class CallModeService : Service() {
                         MicroPumpController.setEnabled(this@CallModeService, true)
                     }
 
-                    if (!gameWasActive) {
+                    if (prefs.getBoolean("charging_mode_enabled", false)) {
+                        startService(Intent(this@CallModeService, ChargingModeService::class.java))
+                    } else if (!gameWasActive) {
                         restoreNormalProfile()
                     }
                     callModeActive = false
