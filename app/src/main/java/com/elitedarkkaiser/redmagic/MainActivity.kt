@@ -916,8 +916,8 @@ if (!isSupportedDevice()) {
             saveShoulderLedState = { saveShoulderLedState() },
             startAutoFanService = { startAutoFanService() },
             stopAutoFanService = { stopAutoFanService() },
-            startAutoPumpService = { startAutoPumpService() },
-            stopAutoPumpService = { stopAutoPumpService() },
+            startSmartMicroPump = { startSmartMicroPump() },
+            stopSmartMicroPump = { stopSmartMicroPump() },
             refreshStatus = { refreshStatus() },
             refreshSmartPumpStatusViews = { refreshSmartPumpStatusViews() }
         )
@@ -980,7 +980,7 @@ if (!isSupportedDevice()) {
         autoPumpEnabled = false
         savePumpState()
         saveAutoPumpState()
-        stopAutoPumpService()
+        stopSmartMicroPump()
         HardwareController.setPumpProfile(profile)
         refreshStatus()
         refreshSmartPumpStatusViews()
@@ -1113,13 +1113,13 @@ if (!isSupportedDevice()) {
         stopService(Intent(this, FanLedService::class.java))
     }
 
-    private fun startAutoPumpService() {
+    private fun startSmartMicroPump() {
         MicroPumpController.saveSmart(this, true)
         MicroPumpController.setEnabled(this, true)
         startMicroPumpService()
     }
 
-    private fun stopAutoPumpService() {
+    private fun stopSmartMicroPump() {
         MicroPumpController.saveSmart(this, false)
         stopMicroPumpService()
     }

@@ -26,8 +26,8 @@ internal object ProfileActions {
         saveShoulderLedState: () -> Unit,
         startAutoFanService: () -> Unit,
         stopAutoFanService: () -> Unit,
-        startAutoPumpService: () -> Unit,
-        stopAutoPumpService: () -> Unit,
+        startSmartMicroPump: () -> Unit,
+        stopSmartMicroPump: () -> Unit,
         refreshStatus: () -> Unit,
         refreshSmartPumpStatusViews: () -> Unit
     ) {
@@ -45,9 +45,9 @@ internal object ProfileActions {
         }
 
         if (profile.autoPumpEnabled) {
-            startAutoPumpService()
+            startSmartMicroPump()
         } else {
-            stopAutoPumpService()
+            stopSmartMicroPump()
         }
 
         refreshStatus()
