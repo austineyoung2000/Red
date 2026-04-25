@@ -35,9 +35,20 @@ class ChargingModeService : Service() {
                         )
                     }
                 } else if (chargingModeActive) {
-                    prefs.edit().putBoolean(PrefsKeys.CHARGING_LED_OWNER, false).apply()
+                    val gameWasActive = prefs.getBoolean(PrefsKeys.GAME_LED_OWNER, false)
+
+                    prefs.edit()
+                        .putBoolean(PrefsKeys.CHARGING_LED_OWNER, false)
+                        .putBoolean("force_game_mode_reapply", gameWasActive)
+                        .apply()
+
                     chargingModeActive = false
-                    NormalLedRestoreRunner.restore(this@ChargingModeService)
+
+                    if (gameWasActive) {
+                        startService(Intent(this@ChargingModeService, GameModeService::class.java))
+                    } else {
+                        NormalLedRestoreRunner.restore(this@ChargingModeService)
+                    }
                 }
             } catch (_: Throwable) {
             } finally {
