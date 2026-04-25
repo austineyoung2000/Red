@@ -191,6 +191,55 @@ class MainActivity : Activity() {
 
 
 
+    private fun getSavedChargingModeProfile(): GameModeProfile {
+        return GameModeProfile(
+            fanEnabled = prefs().getBoolean("charging_mode_fan_enabled", false),
+            fanLevel = prefs().getInt("charging_mode_fan_level", 2),
+            pumpEnabled = false,
+            pumpProfile = "quick",
+            fanLedEnabled = prefs().getBoolean("charging_mode_fan_led_enabled", true),
+            fanLedEffect = prefs().getString("charging_mode_fan_led_effect", "steady") ?: "steady",
+            fanLedColor = prefs().getInt("charging_mode_fan_led_color", prefs().getInt(PrefsKeys.FAN_LED_COLOR, 1)),
+            logoLedEnabled = prefs().getBoolean("charging_mode_logo_led_enabled", true),
+            logoLedEffect = prefs().getString("charging_mode_logo_led_effect", "steady") ?: "steady",
+            logoLedColor = prefs().getInt("charging_mode_logo_led_color", prefs().getInt(PrefsKeys.LOGO_LED_COLOR, 1)),
+            shoulderLedEnabled = prefs().getBoolean("charging_mode_shoulder_led_enabled", true),
+            shoulderLedEffect = prefs().getString("charging_mode_shoulder_led_effect", "steady") ?: "steady",
+            shoulderLedColor = prefs().getInt("charging_mode_shoulder_led_color", prefs().getInt(PrefsKeys.SHOULDER_LED_COLOR, 8))
+        )
+    }
+
+    private fun saveChargingModeProfile(profile: GameModeProfile) {
+        prefs().edit()
+            .putBoolean("charging_mode_fan_enabled", profile.fanEnabled)
+            .putInt("charging_mode_fan_level", profile.fanLevel)
+            .putBoolean("charging_mode_fan_led_enabled", profile.fanLedEnabled)
+            .putString("charging_mode_fan_led_effect", profile.fanLedEffect)
+            .putInt("charging_mode_fan_led_color", profile.fanLedColor)
+            .putBoolean("charging_mode_logo_led_enabled", profile.logoLedEnabled)
+            .putString("charging_mode_logo_led_effect", profile.logoLedEffect)
+            .putInt("charging_mode_logo_led_color", profile.logoLedColor)
+            .putBoolean("charging_mode_shoulder_led_enabled", profile.shoulderLedEnabled)
+            .putString("charging_mode_shoulder_led_effect", profile.shoulderLedEffect)
+            .putInt("charging_mode_shoulder_led_color", profile.shoulderLedColor)
+            .apply()
+    }
+
+    private fun chargingModeProfileSummary(): String {
+        val p = getSavedChargingModeProfile()
+        val fanLabel = if (p.fanEnabled) {
+            when (p.fanLevel) {
+                0, 1 -> "Quiet"
+                4, 5 -> "Turbo"
+                else -> "Balanced"
+            }
+        } else {
+            "Off"
+        }
+
+        return "Fan $fanLabel • Fan LED ${if (p.fanLedEnabled) "On" else "Off"} • Logo ${if (p.logoLedEnabled) "On" else "Off"} • Shoulder ${if (p.shoulderLedEnabled) "On" else "Off"}"
+    }
+
     private fun isCallModeEnabledSaved(): Boolean {
         return prefs().getBoolean("call_mode_enabled", false)
     }
@@ -2519,7 +2568,7 @@ addView(row(configureTriggersBtn, trigEnableBtn))
 
 
         val chargingModeSummaryText = TextView(this).apply {
-            text = "Charging Mode: " + if (prefs().getBoolean("charging_mode_enabled", false)) "Enabled" else "Disabled"
+            text = chargingModeProfileSummary()
             textSize = 13f
             setTextColor(textSecondary)
             setPadding(0, dp(2), 0, dp(10))
@@ -2553,7 +2602,8 @@ addView(row(configureTriggersBtn, trigEnableBtn))
         }
 
         val editChargingProfileBtn = actionButton("EDIT CHARGING PROFILE") {
-            Toast.makeText(this@MainActivity, "Charging profile editor coming next", Toast.LENGTH_SHORT).show()
+            showChargingModeProfileDialog()
+            chargingModeSummaryText.text = chargingModeProfileSummary()
         }
 
         val chargingModeCard = sectionPanel().apply {
@@ -2856,6 +2906,33 @@ addView(row(configureTriggersBtn, trigEnableBtn))
                 .putString("right_trigger", "VOL_UP")
                 .apply()
         }
+    }
+
+    private fun showChargingModeProfileDialog() {
+        GameModeUi.showGameModeProfileDialog(
+            activity = this,
+            current = getSavedChargingModeProfile(),
+            deps = GameModeUi.Deps(
+                textPrimary = textPrimary,
+                textSecondary = textSecondary,
+                panelColor = panelColor,
+                borderColor = borderColor,
+                panelPressed = panelPressed,
+                accent = accent,
+                typeface = typeface,
+                dp = { value -> dp(value) },
+                roundedBg = { fill, stroke, radius -> roundedBg(fill, stroke, radius) },
+                roundedFill = { color, radius -> roundedFill(color, radius) },
+                filterChip = { label, selected, onClick -> filterChip(label, selected, onClick) },
+                space = { value -> space(value) },
+                colorDotDrawable = { hex, selected -> colorDotDrawable(hex, selected) },
+                colorDotGeneric = { hex, selected, onClick -> colorDotGeneric(hex, selected, onClick) },
+            ),
+            onSaveProfile = { profile ->
+                saveChargingModeProfile(profile)
+                startService(Intent(this, ChargingModeService::class.java))
+            }
+        )
     }
 
     private fun showCallModeProfileDialog() {
