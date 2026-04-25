@@ -31,7 +31,7 @@ class ChargingModeService : Service() {
                     if (!callOwns) {
                         ModeHardwareApplier.apply(
                             this@ChargingModeService,
-                            ChargingModeProfileBuilder.build(prefs)
+                            ChargingModeProfileBuilder.build(prefs, isFullCharge())
                         )
                     }
                 } else if (chargingModeActive) {
@@ -75,6 +75,12 @@ class ChargingModeService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun isFullCharge(): Boolean {
+        val batteryManager = getSystemService(BATTERY_SERVICE) as BatteryManager
+        val percent = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+        return percent >= 100
+    }
 
     private fun isCharging(): Boolean {
         val batteryManager = getSystemService(BATTERY_SERVICE) as BatteryManager
