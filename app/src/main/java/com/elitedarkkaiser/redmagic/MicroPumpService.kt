@@ -95,8 +95,11 @@ class MicroPumpService : Service() {
             return
         }
 
-        val onThreshold = if (charging) 90f else ON_TEMP_F
-        val offThreshold = if (charging) 84f else OFF_TEMP_F
+        val savedOnTemp = MicroPumpController.onTemp(this)
+        val savedOffTemp = MicroPumpController.offTemp(this)
+
+        val onThreshold = if (charging) (savedOnTemp - 5f).coerceAtLeast(savedOffTemp + 2f) else savedOnTemp
+        val offThreshold = if (charging) (savedOffTemp - 4f).coerceAtLeast(70f) else savedOffTemp
 
         val mode = when {
             tempF >= 105f -> "Performance"

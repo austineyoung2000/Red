@@ -1911,6 +1911,50 @@ if (!isSupportedDevice()) {
                 addView(smartSwitch)
             }
 
+            val smartOnTempText = TextView(this@MainActivity).apply {
+                text = "Smart ON temp: ${MicroPumpController.onTemp(this@MainActivity).toInt()}°F"
+                textSize = 12f
+                setTextColor(textSecondary)
+                setPadding(0, dp(10), 0, dp(4))
+            }
+
+            val smartOnSeek = SeekBar(this@MainActivity).apply {
+                max = 30
+                progress = (MicroPumpController.onTemp(this@MainActivity).toInt() - 80).coerceIn(0, 30)
+                setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                        val value = 80 + progress
+                        MicroPumpController.saveOnTemp(this@MainActivity, value.toFloat())
+                        smartOnTempText.text = "Smart ON temp: ${value}°F"
+                        statusText.text = microPumpStatusText()
+                    }
+                    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+                })
+            }
+
+            val smartOffTempText = TextView(this@MainActivity).apply {
+                text = "Smart OFF temp: ${MicroPumpController.offTemp(this@MainActivity).toInt()}°F"
+                textSize = 12f
+                setTextColor(textSecondary)
+                setPadding(0, dp(8), 0, dp(4))
+            }
+
+            val smartOffSeek = SeekBar(this@MainActivity).apply {
+                max = 30
+                progress = (MicroPumpController.offTemp(this@MainActivity).toInt() - 70).coerceIn(0, 30)
+                setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                        val value = 70 + progress
+                        MicroPumpController.saveOffTemp(this@MainActivity, value.toFloat())
+                        smartOffTempText.text = "Smart OFF temp: ${value}°F"
+                        statusText.text = microPumpStatusText()
+                    }
+                    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                    override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+                })
+            }
+
             val refreshBtn = actionButton("REFRESH PUMP STATUS") {
                 refreshMicroPumpUi()
             }
@@ -1940,6 +1984,10 @@ if (!isSupportedDevice()) {
             addView(statusText)
             addView(manualRow)
             addView(smartRow)
+            addView(smartOnTempText)
+            addView(smartOnSeek)
+            addView(smartOffTempText)
+            addView(smartOffSeek)
             addView(space(dp(10)))
             addView(row(refreshBtn, forceOnBtn))
             addView(space(dp(8)))
