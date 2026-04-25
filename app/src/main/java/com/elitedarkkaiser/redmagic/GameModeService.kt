@@ -23,6 +23,7 @@ class GameModeService : Service() {
 
                 if (!currentPkg.isNullOrBlank() && tracked.contains(currentPkg)) {
                     val callModeOwnsHardware = prefs.getBoolean(PrefsKeys.CALL_LED_OWNER, false)
+                    val chargingModeOwnsHardware = prefs.getBoolean(PrefsKeys.CHARGING_LED_OWNER, false)
                     val forceGameReapply = prefs.getBoolean("force_game_mode_reapply", false)
 
                     val enteringGame = gameModeActiveFor != currentPkg
@@ -38,7 +39,7 @@ class GameModeService : Service() {
                         }
                     }
 
-                    if (!callModeOwnsHardware && (enteringGame || forceGameReapply)) {
+                    if (!callModeOwnsHardware && !chargingModeOwnsHardware && (enteringGame || forceGameReapply)) {
                         prefs.edit().putBoolean("force_game_mode_reapply", false).apply()
                         applyGameModeProfile()
                     }
