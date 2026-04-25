@@ -1512,6 +1512,7 @@ if (!isSupportedDevice()) {
         refreshStatus()
         startGameModeService()
         startService(Intent(this, CallModeService::class.java))
+        startService(Intent(this, ChargingModeService::class.java))
     }
 
     private fun createHomeTab(): LinearLayout {
