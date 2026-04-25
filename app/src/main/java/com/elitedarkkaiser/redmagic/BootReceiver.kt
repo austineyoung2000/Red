@@ -59,20 +59,12 @@ class BootReceiver : BroadcastReceiver() {
         val prefs = context.getSharedPreferences(PrefsKeys.HW_PREFS, Context.MODE_PRIVATE)
         val triggerPrefs = context.getSharedPreferences(PrefsKeys.TRIGGER_PREFS, Context.MODE_PRIVATE)
 
-        val pumpEnabled = prefs.getBoolean("pump_enabled", false)
-        val pumpProfile = prefs.getString("pump_profile", "quick") ?: "quick"
         val autoPumpEnabled = false
         val autoFanEnabled = prefs.getBoolean("auto_fan_curve_enabled", false)
 
         val anyLedEnabled = NormalLedApplier.apply(prefs)
         if (anyLedEnabled) {
             context.startService(Intent(context, FanLedService::class.java))
-        }
-
-        if (pumpEnabled || autoPumpEnabled) {
-            HardwareController.setPumpProfile(pumpProfile)
-        } else {
-            HardwareController.enablePump(false)
         }
 
         if (MicroPumpController.isSmartSaved(context)) {
@@ -105,13 +97,9 @@ class BootReceiver : BroadcastReceiver() {
                 context.startService(Intent(context, FanLedService::class.java))
             }
 
-            if (pumpEnabled || autoPumpEnabled) {
-                HardwareController.setPumpProfile(pumpProfile)
-            }
-
             android.util.Log.i(
                 "RedmagicBoot",
-                "boot restore reapplied normal LEDs via shared applier pump=$pumpEnabled/$pumpProfile autoPump=$autoPumpEnabled autoFan=$autoFanEnabled"
+                "boot restore reapplied normal LEDs via shared applier microPump=${MicroPumpController.isEnabledSaved(context)} smartMicroPump=${MicroPumpController.isSmartSaved(context)} autoFan=$autoFanEnabled"
             )
         }, 10000L)
     }
