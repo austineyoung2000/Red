@@ -6,6 +6,7 @@ object PrefsKeys {
 
     const val GAME_LED_OWNER = "game_mode_led_override_active"
     const val CALL_LED_OWNER = "call_mode_led_override_active"
+    const val CHARGING_LED_OWNER = "charging_mode_led_override_active"
 
     const val FAN_LED_ENABLED = "fan_led_enabled"
     const val FAN_LED_EFFECT = "fan_led_effect"

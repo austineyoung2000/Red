@@ -9,6 +9,9 @@ object LedOwnership {
     fun callOwns(prefs: SharedPreferences): Boolean =
         prefs.getBoolean(PrefsKeys.CALL_LED_OWNER, false)
 
+    fun chargingOwns(prefs: SharedPreferences): Boolean =
+        prefs.getBoolean(PrefsKeys.CHARGING_LED_OWNER, false)
+
     fun normalAllowed(prefs: SharedPreferences): Boolean =
-        !gameOwns(prefs) && !callOwns(prefs)
+        !gameOwns(prefs) && !callOwns(prefs) && !chargingOwns(prefs)
 }
