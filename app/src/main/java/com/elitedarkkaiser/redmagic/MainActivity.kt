@@ -1834,8 +1834,16 @@ if (!isSupportedDevice()) {
                 text = microPumpStatusText()
                 textSize = 12f
                 setTextColor(textSecondary)
-                setPadding(0, dp(8), 0, dp(10))
+                setPadding(0, dp(8), 0, dp(6))
                 setLineSpacing(0f, 1.15f)
+            }
+
+            val smartStateText = TextView(this@MainActivity).apply {
+                text = MicroPumpController.runtimeSummary(this@MainActivity)
+                textSize = 13f
+                setTextColor(textPrimary)
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding(0, 0, 0, dp(10))
             }
 
             val manualSwitch = android.widget.Switch(this@MainActivity).apply {
@@ -1850,6 +1858,7 @@ if (!isSupportedDevice()) {
                 val smartEnabled = MicroPumpController.isSmartSaved(this@MainActivity)
 
                 statusText.text = microPumpStatusText()
+                smartStateText.text = MicroPumpController.runtimeSummary(this@MainActivity)
                 manualSwitch.isChecked = MicroPumpController.isEnabledSaved(this@MainActivity)
                 smartSwitch.isChecked = smartEnabled
 
@@ -1987,6 +1996,7 @@ if (!isSupportedDevice()) {
             }
 
             addView(statusText)
+            addView(smartStateText)
             addView(manualRow)
             addView(smartRow)
             addView(smartOnTempText)

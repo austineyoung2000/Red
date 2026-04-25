@@ -70,9 +70,11 @@ class MicroPumpService : Service() {
             MicroPumpController.setEnabled(this, true)
             pumpOn = true
             val remainingMin = ((MicroPumpController.forceUntil(this) - System.currentTimeMillis()) / 60000L).coerceAtLeast(0L)
+            MicroPumpController.saveRuntimeState(this, "Force", null, true)
             updateNotification("Micro Pump forced ON • ${remainingMin} min left")
             return
         } else if (!MicroPumpController.isSmartSaved(this)) {
+            MicroPumpController.saveRuntimeState(this, "Manual", null, false)
             MicroPumpController.setEnabled(this, false)
             stopSelf()
             return
@@ -80,6 +82,7 @@ class MicroPumpService : Service() {
 
         val tempF = DashboardSnapshot.readCpuTempF().toFloatOrNull()
         if (tempF == null) {
+            MicroPumpController.saveRuntimeState(this, "Unknown", null, pumpOn)
             updateNotification("Micro Pump active • Temp unknown")
             return
         }
@@ -91,6 +94,7 @@ class MicroPumpService : Service() {
         if (!charging && batteryPercent in 1..14) {
             MicroPumpController.setEnabled(this, false)
             pumpOn = false
+            MicroPumpController.saveRuntimeState(this, "Paused", tempF, false)
             updateNotification("Micro Pump paused • Low battery ${batteryPercent}%")
             return
         }
@@ -115,6 +119,8 @@ class MicroPumpService : Service() {
             MicroPumpController.setEnabled(this, false)
             pumpOn = false
         }
+
+        MicroPumpController.saveRuntimeState(this, mode, tempF, pumpOn)
 
         updateNotification(
             "Micro Pump: ${if (pumpOn) "ON" else "OFF"} • $mode • ${tempF}°F • ${if (charging) "Charging" else "Battery"}"

@@ -8,6 +8,9 @@ object MicroPumpController {
     const val KEY_FORCE_UNTIL = "micro_pump_force_until"
     const val KEY_ON_TEMP = "micro_pump_on_temp"
     const val KEY_OFF_TEMP = "micro_pump_off_temp"
+    const val KEY_RUNTIME_MODE = "micro_pump_runtime_mode"
+    const val KEY_RUNTIME_TEMP = "micro_pump_runtime_temp"
+    const val KEY_RUNTIME_ACTIVE = "micro_pump_runtime_active"
 
     private const val PROC_PATH = "/proc/driver/micropump/enable"
     private const val SETTINGS_KEY = "liquid_cooling_off_on"
@@ -68,6 +71,24 @@ object MicroPumpController {
             if [ -e $PROC_PATH ]; then echo $value > $PROC_PATH; fi
             settings put system $SETTINGS_KEY $value
         """.trimIndent())
+    }
+
+    fun saveRuntimeState(context: Context, mode: String, tempF: Float?, active: Boolean) {
+        prefs(context).edit()
+            .putString(KEY_RUNTIME_MODE, mode)
+            .putFloat(KEY_RUNTIME_TEMP, tempF ?: -1f)
+            .putBoolean(KEY_RUNTIME_ACTIVE, active)
+            .apply()
+    }
+
+    fun runtimeSummary(context: Context): String {
+        val p = prefs(context)
+        val mode = p.getString(KEY_RUNTIME_MODE, "Idle") ?: "Idle"
+        val temp = p.getFloat(KEY_RUNTIME_TEMP, -1f)
+        val active = p.getBoolean(KEY_RUNTIME_ACTIVE, false)
+
+        val tempText = if (temp >= 0f) "${temp.toInt()}°F" else "--"
+        return "Auto state: $mode • Pump: ${if (active) "ON" else "OFF"} • Temp: $tempText"
     }
 
     fun diagnostics(): String {
