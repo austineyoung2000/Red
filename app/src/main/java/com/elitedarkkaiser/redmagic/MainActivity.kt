@@ -1114,16 +1114,14 @@ if (!isSupportedDevice()) {
     }
 
     private fun startAutoPumpService() {
-        val intent = Intent(this, AutoPumpService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        } else {
-            startService(intent)
-        }
+        MicroPumpController.saveSmart(this, true)
+        MicroPumpController.setEnabled(this, true)
+        startMicroPumpService()
     }
 
     private fun stopAutoPumpService() {
-        stopService(Intent(this, AutoPumpService::class.java))
+        MicroPumpController.saveSmart(this, false)
+        stopMicroPumpService()
     }
 
     private fun startMicroPumpService() {
