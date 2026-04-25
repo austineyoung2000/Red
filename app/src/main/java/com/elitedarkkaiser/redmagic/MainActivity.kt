@@ -982,7 +982,7 @@ if (!isSupportedDevice()) {
         savePumpState()
         saveAutoPumpState()
         stopSmartMicroPump()
-        HardwareController.setPumpProfile(profile)
+        MicroPumpController.setEnabled(this, true)
         refreshStatus()
         refreshSmartPumpStatusViews()
     }
