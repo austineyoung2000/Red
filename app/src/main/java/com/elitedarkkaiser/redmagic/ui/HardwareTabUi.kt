@@ -82,6 +82,14 @@ object HardwareTabUi {
             addView(deps.space(deps.dp(4)))
             addView(deps.bodyText("Automatically enable triggers and start the service on boot or when the app launches."))
             addView(deps.row(configureTriggersBtn, trigEnableBtn))
+
+val setupTouchBtn = deps.actionButton("SETUP TRIGGER TOUCH", false) {
+    activity.startService(android.content.Intent(activity, com.elitedarkkaiser.redmagic.TriggerTouchOverlayService::class.java))
+}
+
+addView(deps.space(deps.dp(8)))
+addView(deps.singleRow(setupTouchBtn))
+
         }
 
         val vibrateBtn = deps.actionButton("TEST HAPTIC", false) {
