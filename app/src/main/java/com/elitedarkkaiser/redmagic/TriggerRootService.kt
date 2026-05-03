@@ -15,6 +15,7 @@ class TriggerRootService : Service() {
     private var running = true
     private val held = ConcurrentHashMap<String, AtomicBoolean>()
     private val repeatThreads = ConcurrentHashMap<String, Thread>()
+    private val lastPulseAt = ConcurrentHashMap<String, Long>()
 
     private var rightUnlockArmedAt = 0L
     private var rightUnlockedUntil = 0L
@@ -23,6 +24,8 @@ class TriggerRootService : Service() {
     private val RIGHT_UNLOCK_ACTIVE_MS = 2500L
     private val HOLD_REPEAT_START_MS = 350L
     private val HOLD_REPEAT_INTERVAL_MS = 110L
+    private val RAPID_FIRE_INTERVAL_MS = 75L
+    private val VIRTUAL_HOLD_TIMEOUT_MS = 1200L
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -98,9 +101,114 @@ class TriggerRootService : Service() {
             "MEDIA_PLAY_PAUSE" -> runRoot("input keyevent 85")
             "MEDIA_NEXT" -> runRoot("input keyevent 87")
             "MEDIA_PREVIOUS" -> runRoot("input keyevent 88")
+            "TOUCH_LEFT_POINT" -> tapTouchPoint("left")
+            "TOUCH_RIGHT_POINT" -> tapTouchPoint("right")
+            "HOLD_LEFT_POINT" -> startHoldTouchPoint(if (action.contains("LEFT")) "left_trigger" else "right_trigger", "left")
+            "HOLD_RIGHT_POINT" -> startHoldTouchPoint(if (action.contains("LEFT")) "left_trigger" else "right_trigger", "right")
+            "REPEAT_LEFT_POINT" -> startRapidTouchPoint(if (action.contains("LEFT")) "left_trigger" else "right_trigger", "left")
+            "REPEAT_RIGHT_POINT" -> startRapidTouchPoint(if (action.contains("LEFT")) "left_trigger" else "right_trigger", "right")
             "NONE" -> Unit
             else -> Unit
         }
+    }
+
+
+    private fun currentForegroundPackage(): String? {
+        return try {
+            val usageStatsManager = getSystemService(USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
+            val current = now()
+            usageStatsManager.queryUsageStats(
+                android.app.usage.UsageStatsManager.INTERVAL_DAILY,
+                current - 15000L,
+                current
+            )
+                ?.filter { it.packageName != packageName }
+                ?.maxByOrNull { it.lastTimeUsed }
+                ?.packageName
+        } catch (t: Throwable) {
+            android.util.Log.e("TRIGGER", "currentForegroundPackage failed: $t")
+            null
+        }
+    }
+
+    private fun loadPoint(side: String): TriggerTouchPoint? {
+        val activePkg = activeTriggerTouchPackageStorage(this)
+        val foregroundPkg = currentForegroundPackage()
+        val pkg = activePkg ?: foregroundPkg ?: return null
+        val profile = loadTriggerTouchProfileStorage(this, pkg)
+        return (if (side == "left") profile.leftPoint else profile.rightPoint)
+            ?.takeIf { it.x >= 0 && it.y >= 0 }
+    }
+
+    private fun slotFor(side: String): Int = if (side == "left") 8 else 9
+
+    private fun tapTouchPoint(side: String) {
+        val point = loadPoint(side) ?: return
+        RootTouchInjector.tap(slotFor(side), point.x, point.y, 45L)
+    }
+
+    private fun startHoldTouchPoint(prefKey: String, side: String) {
+        val point = loadPoint(side) ?: return
+        lastPulseAt[prefKey] = now()
+        if (repeatThreads[prefKey]?.isAlive == true) return
+
+        val flag = AtomicBoolean(true)
+        held[prefKey] = flag
+
+        val thread = Thread {
+            try {
+                hapticHoldStart()
+                RootTouchInjector.down(slotFor(side), point.x, point.y)
+                while (running && flag.get()) {
+                    if (now() - (lastPulseAt[prefKey] ?: 0L) > VIRTUAL_HOLD_TIMEOUT_MS) break
+                    Thread.sleep(60L)
+                }
+            } catch (_: InterruptedException) {
+            } finally {
+                RootTouchInjector.up(slotFor(side))
+                held.remove(prefKey)
+                repeatThreads.remove(prefKey)
+                lastPulseAt.remove(prefKey)
+            }
+        }
+
+        repeatThreads[prefKey] = thread
+        thread.start()
+    }
+
+    private fun startRapidTouchPoint(prefKey: String, side: String) {
+        val point = loadPoint(side) ?: return
+        lastPulseAt[prefKey] = now()
+        if (repeatThreads[prefKey]?.isAlive == true) return
+
+        val flag = AtomicBoolean(true)
+        held[prefKey] = flag
+
+        val thread = Thread {
+            try {
+                hapticHoldStart()
+                while (running && flag.get()) {
+                    if (now() - (lastPulseAt[prefKey] ?: 0L) > VIRTUAL_HOLD_TIMEOUT_MS) break
+                    RootTouchInjector.tap(slotFor(side), point.x, point.y, 35L)
+                    Thread.sleep(RAPID_FIRE_INTERVAL_MS)
+                }
+            } catch (_: InterruptedException) {
+            } finally {
+                held.remove(prefKey)
+                repeatThreads.remove(prefKey)
+                lastPulseAt.remove(prefKey)
+            }
+        }
+
+        repeatThreads[prefKey] = thread
+        thread.start()
+    }
+
+    private fun isTouchHoldOrRapid(action: String): Boolean {
+        return action == "HOLD_LEFT_POINT" ||
+            action == "HOLD_RIGHT_POINT" ||
+            action == "REPEAT_LEFT_POINT" ||
+            action == "REPEAT_RIGHT_POINT"
     }
 
     private fun isRepeatable(action: String): Boolean {
@@ -206,8 +314,9 @@ class TriggerRootService : Service() {
         hapticTap()
         rightTriggerUnlockedUntil = System.currentTimeMillis() + 1000L
         android.util.Log.d("TRIGGER", "LEFT unlocked right trigger until=" + rightTriggerUnlockedUntil)
-        performAction(getAction("left_trigger"))
-        startRepeater("left_trigger")
+        val action = getAction("left_trigger")
+        performAction(action)
+        if (!isTouchHoldOrRapid(action)) startRepeater("left_trigger")
     }
 
     private fun handleRightDown(device: String, line: String) {
@@ -221,8 +330,9 @@ class TriggerRootService : Service() {
         if (System.currentTimeMillis() <= rightTriggerUnlockedUntil) {
             rightTriggerUnlockedUntil = 0L
             hapticTap()
-            performAction(getAction("right_trigger"))
-            startRepeater("right_trigger")
+            val action = getAction("right_trigger")
+            performAction(action)
+            if (!isTouchHoldOrRapid(action)) startRepeater("right_trigger")
             return
         }
 
@@ -232,12 +342,20 @@ class TriggerRootService : Service() {
         }
 
         hapticTap()
-        performAction(getAction("right_trigger"))
-        startRepeater("right_trigger")
+        val action = getAction("right_trigger")
+        performAction(action)
+        if (!isTouchHoldOrRapid(action)) startRepeater("right_trigger")
     }
 
     private fun handleUp(prefKey: String, device: String, line: String) {
         android.util.Log.d("TRIGGER", "UP device=" + device + " key=" + prefKey + " line=" + line)
+
+        val action = getAction(prefKey)
+        if (isTouchHoldOrRapid(action)) {
+            lastPulseAt[prefKey] = now()
+            return
+        }
+
         stopRepeater(prefKey)
     }
 
