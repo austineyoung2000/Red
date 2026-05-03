@@ -53,3 +53,6 @@ Thumbs.db
 # Generated
 bin/
 gen/
+*.bak_*
+*debug.txt
+patch_*.py
