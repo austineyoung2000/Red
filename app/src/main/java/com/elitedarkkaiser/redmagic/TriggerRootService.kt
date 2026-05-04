@@ -10,6 +10,21 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class TriggerRootService : Service() {
 
+    private fun currentPackage(): String? {
+        return try {
+            val usm = getSystemService(USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
+            val now = System.currentTimeMillis()
+            usm.queryUsageStats(
+                android.app.usage.UsageStatsManager.INTERVAL_DAILY,
+                now - 10000,
+                now
+            )?.maxByOrNull { it.lastTimeUsed }?.packageName
+        } catch (t: Throwable) {
+            null
+        }
+    }
+
+
     private var rightTriggerUnlockedUntil: Long = 0L
     private var running = true
     private val held = ConcurrentHashMap<String, AtomicBoolean>()
@@ -113,7 +128,7 @@ class TriggerRootService : Service() {
     }
 
     private fun tapTouchPoint(side: String) {
-        val point = TriggerTouchStorage.load(this, side)
+        val point = currentPackage()?.let { TriggerTouchStorage.load(this, it, side) }
         if (point == null) {
             android.util.Log.d("TRIGGER", "No saved touch point for side=$side")
             return
@@ -126,7 +141,7 @@ class TriggerRootService : Service() {
     private fun startHoldTouchPoint(prefKey: String, side: String) {
         stopRepeater(prefKey)
 
-        val point = TriggerTouchStorage.load(this, side)
+        val point = currentPackage()?.let { TriggerTouchStorage.load(this, it, side) }
         if (point == null) {
             android.util.Log.d("TRIGGER", "No saved hold point for side=$side")
             return
@@ -160,7 +175,7 @@ class TriggerRootService : Service() {
     private fun startRapidTouchPoint(prefKey: String, side: String) {
         stopRepeater(prefKey)
 
-        val point = TriggerTouchStorage.load(this, side)
+        val point = currentPackage()?.let { TriggerTouchStorage.load(this, it, side) }
         if (point == null) {
             android.util.Log.d("TRIGGER", "No saved rapid point for side=$side")
             return

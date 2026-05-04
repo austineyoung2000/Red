@@ -9,6 +9,21 @@ import android.widget.TextView
 
 class TriggerTouchOverlayService : Service() {
 
+    private fun currentPackage(): String? {
+        return try {
+            val usm = getSystemService(USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
+            val now = System.currentTimeMillis()
+            usm.queryUsageStats(
+                android.app.usage.UsageStatsManager.INTERVAL_DAILY,
+                now - 10000,
+                now
+            )?.maxByOrNull { it.lastTimeUsed }?.packageName
+        } catch (t: Throwable) {
+            null
+        }
+    }
+
+
     private lateinit var wm: WindowManager
     private var leftView: View? = null
     private var rightView: View? = null
@@ -23,11 +38,11 @@ class TriggerTouchOverlayService : Service() {
 
     private fun createOverlay() {
         leftView = createDot("L") { x, y ->
-            TriggerTouchStorage.save(this, "left", x, y)
+            currentPackage()?.let { TriggerTouchStorage.save(this, it, "left", x, y) }
         }
 
         rightView = createDot("R") { x, y ->
-            TriggerTouchStorage.save(this, "right", x, y)
+            currentPackage()?.let { TriggerTouchStorage.save(this, it, "right", x, y) }
         }
 
         wm.addView(leftView, layoutParams(200, 600))
