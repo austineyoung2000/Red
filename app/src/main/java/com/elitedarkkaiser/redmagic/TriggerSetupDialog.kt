@@ -39,7 +39,13 @@ internal object TriggerSetupDialog {
             "Volume Down",
             "Play / Pause",
             "Next Track",
-            "Previous Track"
+            "Previous Track",
+            "Touch: Left Point",
+            "Touch: Right Point",
+            "Hold: Left Point",
+            "Hold: Right Point",
+            "Rapid: Left Point",
+            "Rapid: Right Point"
         )
         val values = arrayOf(
             "NONE",
@@ -47,7 +53,13 @@ internal object TriggerSetupDialog {
             "VOL_DOWN",
             "MEDIA_PLAY_PAUSE",
             "MEDIA_NEXT",
-            "MEDIA_PREVIOUS"
+            "MEDIA_PREVIOUS",
+            "TOUCH_LEFT_POINT",
+            "TOUCH_RIGHT_POINT",
+            "HOLD_LEFT_POINT",
+            "HOLD_RIGHT_POINT",
+            "REPEAT_LEFT_POINT",
+            "REPEAT_RIGHT_POINT"
         )
 
         fun indexOfValue(value: String): Int {
