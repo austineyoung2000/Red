@@ -140,6 +140,7 @@ class TriggerTouchOverlayService : Service() {
             TriggerTouchStorage.save(this, pkg, "left", leftX, leftY)
             TriggerTouchStorage.save(this, pkg, "right", rightX, rightY)
             TriggerTouchStorage.markConfirmed(this, pkg)
+            TriggerTouchStorage.setActivePackage(this, pkg)
             Toast.makeText(this, "Saved trigger points for $pkg", Toast.LENGTH_SHORT).show()
         }
 
@@ -147,9 +148,18 @@ class TriggerTouchOverlayService : Service() {
             TriggerTouchStorage.save(this, pkg, "left", leftX, leftY)
             TriggerTouchStorage.save(this, pkg, "right", rightX, rightY)
             TriggerTouchStorage.markConfirmed(this, pkg)
+            TriggerTouchStorage.setActivePackage(this, pkg)
+
+            getSharedPreferences("triggers", MODE_PRIVATE)
+                .edit()
+                .putString("left_trigger", "TOUCH_LEFT_POINT")
+                .putString("right_trigger", "TOUCH_RIGHT_POINT")
+                .putBoolean("triggers_auto_start", true)
+                .apply()
+
             HardwareController.enableTriggers()
             startService(Intent(this, TriggerRootService::class.java))
-            Toast.makeText(this, "Saved and enabled triggers", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Saved, mapped L/R, and enabled triggers", Toast.LENGTH_SHORT).show()
         }
 
         val close = button("CLOSE") {

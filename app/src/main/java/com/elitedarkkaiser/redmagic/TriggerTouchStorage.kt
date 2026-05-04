@@ -4,6 +4,7 @@ import android.content.Context
 
 object TriggerTouchStorage {
     private const val PREFS = "trigger_touch"
+    private const val ACTIVE_PACKAGE_KEY = "active_trigger_touch_package"
 
     private fun key(pkg: String, side: String, axis: String): String {
         return "${pkg}_${side}_${axis}"
@@ -38,6 +39,18 @@ object TriggerTouchStorage {
         val x = prefs.getInt(key(pkg, side, "x"), -1)
         val y = prefs.getInt(key(pkg, side, "y"), -1)
         return if (x >= 0 && y >= 0) Pair(x, y) else null
+    }
+
+    fun setActivePackage(context: Context, pkg: String) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putString(ACTIVE_PACKAGE_KEY, pkg)
+            .apply()
+    }
+
+    fun activePackage(context: Context): String? {
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(ACTIVE_PACKAGE_KEY, null)
     }
 
     fun hasBothPoints(context: Context, pkg: String): Boolean {
