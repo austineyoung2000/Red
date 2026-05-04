@@ -344,7 +344,7 @@ class TriggerRootService : Service() {
     }
 
     private fun handleUp(prefKey: String, device: String, line: String) {
-        android.util.Log.d("TRIGGER", "UP device=$device key=$prefKey line=$line)
+        android.util.Log.d("TRIGGER", "UP device=$device key=$prefKey line=$line")
         stopRepeater(prefKey)
     }
 
