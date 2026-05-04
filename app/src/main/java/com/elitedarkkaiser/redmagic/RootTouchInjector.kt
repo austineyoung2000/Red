@@ -25,14 +25,24 @@ object RootTouchInjector {
 
     private val nextTrackingId = AtomicInteger(2000)
 
-    private fun scaleX(x: Int): Int {
-        val width = Resources.getSystem().displayMetrics.widthPixels.coerceAtLeast(1)
-        return ((x.toFloat() / width.toFloat()) * MAX_X).toInt().coerceIn(0, MAX_X)
+    private fun displayWidth(): Int {
+        val dm = Resources.getSystem().displayMetrics
+        return maxOf(dm.widthPixels, dm.heightPixels).coerceAtLeast(1)
     }
 
-    private fun scaleY(y: Int): Int {
-        val height = Resources.getSystem().displayMetrics.heightPixels.coerceAtLeast(1)
-        return ((y.toFloat() / height.toFloat()) * MAX_Y).toInt().coerceIn(0, MAX_Y)
+    private fun displayHeight(): Int {
+        val dm = Resources.getSystem().displayMetrics
+        return minOf(dm.widthPixels, dm.heightPixels).coerceAtLeast(1)
+    }
+
+    private fun scaleX(x: Int, y: Int): Int {
+        val screenH = displayHeight()
+        return ((y.toFloat() / screenH.toFloat()) * MAX_X).toInt().coerceIn(0, MAX_X)
+    }
+
+    private fun scaleY(x: Int, y: Int): Int {
+        val screenW = displayWidth()
+        return (((screenW - x).toFloat() / screenW.toFloat()) * MAX_Y).toInt().coerceIn(0, MAX_Y)
     }
 
     fun down(slot: Int, x: Int, y: Int): Boolean {
@@ -43,8 +53,8 @@ object RootTouchInjector {
             event(EV_ABS, ABS_MT_SLOT, safeSlot),
             event(EV_ABS, ABS_MT_TRACKING_ID, id),
             event(EV_KEY, BTN_TOUCH, 1),
-            event(EV_ABS, ABS_MT_POSITION_X, scaleX(x)),
-            event(EV_ABS, ABS_MT_POSITION_Y, scaleY(y)),
+            event(EV_ABS, ABS_MT_POSITION_X, scaleX(x, y)),
+            event(EV_ABS, ABS_MT_POSITION_Y, scaleY(x, y)),
             event(EV_ABS, ABS_MT_TOUCH_MAJOR, 10),
             event(EV_SYN, SYN_REPORT, 0)
         )
