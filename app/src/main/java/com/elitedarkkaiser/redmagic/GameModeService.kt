@@ -25,6 +25,7 @@ class GameModeService : Service() {
                         gameModeActiveFor = currentPkg
                         setGameModeLedOverrideActiveStorage(this@GameModeService, true)
                         applyGameModeProfile()
+                        launchTriggerOverlayOrService(currentPkg)
                     }
                 } else if (!currentPkg.isNullOrBlank()) {
                     if (gameModeActiveFor != null) {
@@ -37,6 +38,28 @@ class GameModeService : Service() {
             } finally {
                 handler.postDelayed(this, 5000L)
             }
+        }
+    }
+
+
+    private fun launchTriggerOverlayOrService(pkg: String) {
+        try {
+            val triggerPrefs = getSharedPreferences("triggers", Context.MODE_PRIVATE)
+            val autoStart = triggerPrefs.getBoolean("triggers_auto_start", false)
+
+            if (!TriggerTouchStorage.isConfirmed(this, pkg) || !TriggerTouchStorage.hasBothPoints(this, pkg)) {
+                startService(Intent(this, TriggerTouchOverlayService::class.java).apply {
+                    putExtra("pkg", pkg)
+                })
+                return
+            }
+
+            if (autoStart) {
+                HardwareController.enableTriggers()
+                startService(Intent(this, TriggerRootService::class.java))
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("RedmagicGameMode", "launchTriggerOverlayOrService failed for $pkg", t)
         }
     }
 
