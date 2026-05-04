@@ -5,12 +5,14 @@ on:
     branches:
       - main
       - sixteen
+      - sixteen-backup
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
       - sixteen
+      - sixteen-backup
   workflow_dispatch:
 
 permissions:
