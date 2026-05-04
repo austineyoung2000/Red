@@ -44,17 +44,17 @@ class GameModeService : Service() {
 
     private fun launchTriggerOverlayOrService(pkg: String) {
         try {
+            android.util.Log.i("RedmagicGameMode", "Launching trigger overlay for selected game pkg=$pkg")
+
+            startService(Intent(this, TriggerTouchOverlayService::class.java).apply {
+                putExtra("pkg", pkg)
+            })
+
             val triggerPrefs = getSharedPreferences("triggers", Context.MODE_PRIVATE)
             val autoStart = triggerPrefs.getBoolean("triggers_auto_start", false)
 
-            if (!TriggerTouchStorage.isConfirmed(this, pkg) || !TriggerTouchStorage.hasBothPoints(this, pkg)) {
-                startService(Intent(this, TriggerTouchOverlayService::class.java).apply {
-                    putExtra("pkg", pkg)
-                })
-                return
-            }
-
-            if (autoStart) {
+            if (autoStart && TriggerTouchStorage.isConfirmed(this, pkg) && TriggerTouchStorage.hasBothPoints(this, pkg)) {
+                TriggerTouchStorage.setActivePackage(this, pkg)
                 HardwareController.enableTriggers()
                 startService(Intent(this, TriggerRootService::class.java))
             }
