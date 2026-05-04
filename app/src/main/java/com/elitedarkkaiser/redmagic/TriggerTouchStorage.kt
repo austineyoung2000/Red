@@ -19,6 +19,6 @@ object TriggerTouchStorage {
         val prefs = context.getSharedPreferences("trigger_touch", Context.MODE_PRIVATE)
         val x = prefs.getInt(key(pkg, side, "x"), -1)
         val y = prefs.getInt(key(pkg, side, "y"), -1)
-        return if (x >= 0 and y >= 0) Pair(x, y) else null
+        return if (x >= 0 && y >= 0) Pair(x, y) else null
     }
 }
